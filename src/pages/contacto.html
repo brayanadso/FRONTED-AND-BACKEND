@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style/output.css">
+    <title>Document</title>
+</head>
+<header class="bg-white shadow-lg sticky top-0 z-50">
+            <nav class="container mx-auto px-4 py4">
+                <div class="flex justify-between items-center">
+                    <!--Logo mejorado coherente con carrito-->
+                    <div class="flex items-center">
+                        <div class="bg-linear-to-r from-blue-600 to-purple-600 text-white px-3 py-2 rounded-lg mr-3">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1
+                                 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1
+                                1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                            </svg>
+                        </div>
+                        <h1 class="text-2xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <a href="../pages/index.html">TechStore Pro</a>
+                        </h1>
+                    </div>
+                    <!-- menu -->
+                    <div class="hidden md:flex space-x-6">
+                        <a href="../pages/index.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative group">
+                            Inicio
+                            <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-blue-600"></span>
+                        </a>
+                        <a href="../pages/producto.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative group">
+                            Productos
+                            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
+                        </a>
+                        <a href="../pages/categoria.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative group">
+                            Categorias
+                            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
+                        </a>
+                        <a href="../pages/contacto.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative group">
+                            Contactos
+                            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
+                        </a>
+                    </div>
+                    <!-- Cart and Mobile Menu MEJORADOS -->
+                     <div class="flex items-center space-x-4">
+                        <!--Icono de carrito Mejorado - coherente con carrito -->
+                        <a href="#" class="cart-icon relative group p-2.5 hover:bg-linear-to-r hover:from-blue-50 hover:to-indigo-50 rounded-xl 
+                        transition-all duration-300 transform hover:scale-105">
+                        <svg class="w-6 h-6 text-gray-700 group-hover:text-blue-600 transition-all duration-300 group-hover:rotate-3" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5M7 13l-1.1
+                        5m0 0h1.1m0-5v5m0 0h10m-10 0a2 2 0 104 0m6 0a2 2 0 100 4"/>
+                        </svg>
+                        <!-- Contador con efecto pulso mejorado -->
+                         <span id="cart-counter" class="cart-counter-pulse absolute -top2 -right-2 bg-linear-to-r from-red-500 via-pink-500 to-red-600
+                         text-white text-xs font-bold rounded-full min-w-5 h-5 flex items-center justify-center px-1 shadow-lg border-2 border-white" 
+                         style="display: none;"> 0 </span>        
+                    </a>
+    
+                     </div>
+                </div>
+            </nav>
+        </header>
+<body class="bg-gray-50 font-sans">
+
+  <!-- Contenedor principal -->
+  <div class="max-w-8xl mx-auto px-6 py-12">
+    <!-- Título -->
+    <h1 class="text-3xl font-semibold mb-">Contáctanos</h1>
+
+    <!-- Grid principal -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+      <!-- Formulario -->
+      <section class="lg:col-span-8 bg-white shadow rounded-2xl p-8">
+        <h2 class="text-xl font-semibold mb-6">Envíanos un mensaje</h2>
+
+        <form class="space-y-8">
+
+          <!-- Nombre y correo -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Nombre completo *</label>
+              <input type="text" required placeholder="Tu nombre completo" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Correo electrónico *</label>
+              <input type="email" required placeholder="tu@email.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+
+          <!-- Teléfono y tipo de consulta -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Teléfono</label>
+              <input type="tel" placeholder="+57 300 123 4567" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Tipo de consulta *</label>
+              <select required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option>Selecciona un tema</option>
+                <option>Ventas</option>
+                <option>Soporte</option>
+                <option>Otros</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Mensaje -->
+          <div>
+            <label class="block text-sm font-medium mb-1">Mensaje *</label>
+            <textarea rows="5" required placeholder="Escribe tu mensaje aquí..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          </div>
+
+          <!-- Política -->
+          <div class="flex items-start gap-2">
+            <input type="checkbox" required class="mt-1 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+            <label class="text-sm">He leído y acepto la <a href="#" class="text-indigo-600 underline">política de privacidad</a> y el tratamiento de mis datos personales *</label>
+          </div>
+
+          <!-- Botón -->
+          <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-400 text-white font-semibold py-3 rounded-xl shadow hover:opacity-90 transition">Enviar Mensaje</button>
+
+        </form>
+      </section>
+
+      <!-- Información lateral -->
+      <aside class="lg:col-span-4 space-y-6">
+
+        <!-- Información de contacto -->
+        <div class="bg-white shadow rounded-2xl p-6">
+          <h3 class="font-semibold mb-4">Información de Contacto</h3>
+
+          <div class="space-y-3 text-sm text-gray-700">
+            <div class="flex gap-3">
+              <div class="w-9 h-9 flex items-center justify-center bg-indigo-100 rounded-lg">📍</div>
+              <div>
+                <div class="font-medium">Oficina Principal</div>
+                <p class="text-gray-500 text-xs">Carrera 11 # 93-07, Oficina 501<br>Bogotá D.C., Colombia</p>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <div class="w-9 h-9 flex items-center justify-center bg-green-100 rounded-lg">📞</div>
+              <div>
+                <div class="font-medium">Teléfonos</div>
+                <p class="text-gray-500 text-xs">
+                  Línea fija: +57 (1) 234-5678<br>
+                  Celular: +57 300 123 4567
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <div class="w-9 h-9 flex items-center justify-center bg-purple-100 rounded-lg">✉️</div>
+              <div>
+                <div class="font-medium">Correos Departamentales</div>
+                <p class="text-gray-500 text-xs">
+                  General: info@techstore.co<br>
+                  Soporte: soporte@techstore.co
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <div class="w-9 h-9 flex items-center justify-center bg-orange-100 rounded-lg">⏰</div>
+              <div>
+                <div class="font-medium">Horarios de Atención</div>
+                <p class="text-gray-500 text-xs">
+                  Lun - Vie: 8:00 AM - 6:00 PM<br>
+                  Sábados: 9:00 AM - 3:00 PM
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Redes sociales -->
+        <div class="bg-white shadow rounded-2xl p-6">
+          <h4 class="font-semibold mb-4">Síguenos en Redes Sociales</h4>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <a href="#" class="flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-2 hover:shadow">
+              <span class="w-8 h-8 flex items-center justify-center bg-blue-100 rounded">f</span>
+              <div>
+                <div class="font-medium">Facebook</div>
+                <p class="text-gray-500 text-xs">@techstore.co</p>
+              </div>
+            </a>
+
+            <a href="#" class="flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-2 hover:shadow">
+              <span class="w-8 h-8 flex items-center justify-center bg-pink-100 rounded">📸</span>
+              <div>
+                <div class="font-medium">Instagram</div>
+                <p class="text-gray-500 text-xs">@techstore_co</p>
+              </div>
+            </a>
+
+            <a href="#" class="flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-2 hover:shadow">
+              <span class="w-8 h-8 flex items-center justify-center bg-sky-100 rounded">🐦</span>
+              <div>
+                <div class="font-medium">Twitter/X</div>
+                <p class="text-gray-500 text-xs">@techstore_co</p>
+              </div>
+            </a>
+
+            <a href="#" class="flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-2 hover:shadow">
+              <span class="w-8 h-8 flex items-center justify-center bg-emerald-100 rounded">💬</span>
+              <div>
+                <div class="font-medium">WhatsApp</div>
+                <p class="text-gray-500 text-xs">Chat directo</p>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Por qué elegirnos -->
+        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6">
+          <h5 class="font-semibold mb-3">¿Por qué elegirnos?</h5>
+          <ul class="text-sm text-gray-700 space-y-2">
+            <li>✔ Atención personalizada y especializada</li>
+            <li>✔ Soporte técnico post-venta incluido</li>
+            <li>✔ Garantía extendida en todos nuestros productos</li>
+            <li>✔ Envío gratis en compras superiores a $500.000</li>
+          </ul>
+        </div>
+
+      </aside>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-10 bg-slate-900 text-slate-100 rounded-t-xl">
+      <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div>
+          <h6 class="font-semibold mb-2">TechStore Pro</h6>
+          <p class="text-sm text-slate-300">Tu tienda de tecnología de confianza con los mejores productos y precios del mercado.</p>
+        </div>
+
+        <div>
+          <h6 class="font-semibold mb-2">Enlaces</h6>
+          <ul class="text-sm text-slate-300 space-y-1">
+            <li>Inicio</li>
+            <li>Productos</li>
+            <li>Carrito</li>
+            <li>Contacto</li>
+          </ul>
+        </div>
+
+        <div>
+          <h6 class="font-semibold mb-2">Atención al Cliente</h6>
+          <ul class="text-sm text-slate-300 space-y-1">
+            <li>Contacto</li>
+            <li>Envíos</li>
+            <li>Devoluciones</li>
+            <li>Garantías</li>
+          </ul>
+        </div>
+
+        <div>
+          <h6 class="font-semibold mb-2">Legal</h6>
+          <ul class="text-sm text-slate-300 space-y-1">
+            <li>Términos y Condiciones</li>
+            <li>Política de Privacidad</li>
+            <li>Política de Cookies</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800 text-slate-400 text-sm py-4">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+          <div>© 2025 TechStore Pro. Todos los derechos reservados.</div>
+          <div class="text-xs mt-2 md:mt-0">Desarrollado con tecnología colombiana</div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
+
+
+</body>
+</html>
