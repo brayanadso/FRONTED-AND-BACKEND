@@ -1,30 +1,30 @@
 // server.js
-import express from 'express';
-import cors from 'cors';
-import './db/db.js'; // conexión a la base de datos
-import productosRouter from './routes/productos.js'; // 👈 importa las rutas de productos
-import UserRoutes from './routes/User.js';
-import { loginUsuario }  from './controllers/login.js';
+import express from "express";
+import cors from "cors";
+import "./db/db.js"; // Conexión a MongoDB
+
+// Importar rutas
+import productosRouter from "./routes/productos.js";
+import userRoutes from "./routes/User.js";
+import { loginUsuario } from "./controllers/login.js";
 
 const app = express();
 
-// Middleware
-app.use(express.json()); // permite recibir datos JSON
-app.use(cors()); // habilita CORS para todas las rutas
+// Middlewares
+app.use(express.json());
+app.use(cors());
 
 // Ruta de prueba
-app.get('/', (req, res) => {
-  res.send('Servidor con CORS activado y productos disponibles 🚀');
+app.get("/", (req, res) => {
+  res.send("Servidor funcionando con CORS y conectado a MongoDB 🚀");
 });
 
-// Usar las rutas de productos
-app.use('/api/productos', productosRouter); // 👈 activa las rutas CRUD
+// Rutas correctas
+app.use("/api/productos", productosRouter);   // CRUD productos
+app.use("/api/users", userRoutes);            // Registro de usuarios
+app.post("/api/login", loginUsuario);         // Login
 
-// Iniciar servidor
-app.listen(8081, () => console.log('✅ Servidor corriendo en http://localhost:8081'));
-
-//Api de producto
-app.use('/api/User', UserRoutes);
-
-//Api de login
-app.use('/api/login', loginUsuario);
+// Iniciar servidor SIEMPRE AL FINAL
+app.listen(8081, () => {
+  console.log("🔥 Servidor corriendo en http://localhost:8081");
+});
