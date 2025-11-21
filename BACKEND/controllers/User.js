@@ -1,43 +1,32 @@
-// backend/controllers/User.js
-import User from "../models/user.js"; 
+import User from "../models/user.js";
 import bcrypt from "bcrypt";
 
 export const registrarUser = async (req, res) => {
   try {
-    const { Nombre, Apellido, Telefono, Correo, Password } = req.body;
+    const { Nombre, Correo, Password } = req.body;
 
-    // Validar campos obligatorios
-    if (!Nombre || !Apellido || !Telefono || !Correo || !Password) {
+    if (!Nombre || !Correo || !Password) {
       return res.status(400).json({ message: "Todos los campos son obligatorios" });
     }
 
-    // Verificar si el usuario ya existe
-    const existeUser = await User.findOne({ Correo });
-    if (existeUser) {
+    const existe = await User.findOne({ Correo });
+    if (existe) {
       return res.status(400).json({ message: "El usuario ya existe" });
     }
 
-    // Encriptar contraseña
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(Password, saltRounds);
+    const hashed = await bcrypt.hash(Password, 10);
 
-    // Crear usuario
-    const nuevoUsuario = new User({
+    const nuevo = new User({
       Nombre,
-      Apellido,
-      Telefono,
       Correo,
-      Password: hashedPassword,
+      Password: hashed
     });
 
-    await nuevoUsuario.save();
+    await nuevo.save();
 
     res.status(201).json({ message: "Usuario registrado correctamente" });
 
   } catch (error) {
-    res.status(500).json({
-      message: "Error al registrar el usuario",
-      error: error.message
-    });
+    res.status(500).json({ message: "Error en registro", error: error.message });
   }
 };
