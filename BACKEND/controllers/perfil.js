@@ -1,5 +1,5 @@
 // controllers/perfil.js
-import User from "../models/user.js";
+import User from "../models/User.js";
 
 export const obtenerPerfil = async (req, res) => {
     try {

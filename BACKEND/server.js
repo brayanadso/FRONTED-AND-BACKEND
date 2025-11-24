@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import "./db/db.js"; // Conexión a MongoDB
+import "./db/db.js";
 
 import productosRouter from "./routes/productos.js";
 import userRoutes from "./routes/User.js";
@@ -17,8 +17,9 @@ app.get("/", (req, res) => {
   res.send("Servidor funcionando con CORS y conectado a MongoDB 🚀");
 });
 
+// Rutas
 app.use("/api/productos", productosRouter);
-app.use("/api/users", userRoutes);
+app.use("/api/users", userRoutes); // <-- aquí está el registro
 app.post("/api/login", loginUsuario);
 app.use("/api/perfil", obtenerPerfil);
 

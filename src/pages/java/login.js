@@ -1,77 +1,88 @@
-// script de login - Techstore pro
+const API_URL = 'http://localhost:8081/api/login';
 
-document.addEventListener('DOMContentLoaded', function(){
-    console.log('✅ Página cargada correctamente - sistema listo');
+const form = document.getElementById('login-form');
+const loginError = document.getElementById('login-error');
+const loginErrorMessage = document.getElementById('login-error-message');
+const loginBtn = document.getElementById('login-btn');
 
-    const API_URL = "http://localhost:8081/api/login";
-
-    // Enviar los datos del formulario
-    document.getElementById('login-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const btn = document.getElementById('login-btn');
-        const errorDiv = document.getElementById('login-error');
-        const errormsg = document.getElementById('login-error-message');
-
-        errorDiv.classList.add('hidden');
-
-        // Recoger los campos del formulario con nombres que espera el backend
-        const datos = {
-            Correo: document.getElementById('email').value.trim(),
-            Password: document.getElementById('password').value
-        };
-
-        console.log("Datos a enviar:", datos); // <--- depuración en consola del navegador
-
-        // Validar que los campos no estén vacíos
-        if (!datos.Correo || !datos.Password) {
-            errormsg.textContent = 'Por favor complete los datos';
-            errorDiv.classList.remove('hidden');
-            return;
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Ocultar errores previos
+    loginError.classList.add('hidden');
+    
+    // Deshabilitar botón
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = `
+        <svg class="animate-spin h-5 w-5 inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Iniciando...
+    `;
+    
+    const datos = {
+        Correo: document.getElementById('email').value.trim(),
+        Password: document.getElementById('password').value
+    };
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datos)
+        });
+        
+        const data = await response.json();
+        console.log('Respuesta del servidor:', data);
+        
+        if (response.ok) {
+            // ✅ Login exitoso - Guardar datos del usuario
+            localStorage.setItem('usuario', JSON.stringify(data.usuario));
+            
+            // Mostrar mensaje de éxito
+            loginBtn.innerHTML = `
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                ¡Éxito! Redirigiendo...
+            `;
+            loginBtn.classList.remove('from-blue-600', 'to-purple-600');
+            loginBtn.classList.add('from-green-600', 'to-green-700');
+            
+            // Redirigir después de 1 segundo
+            setTimeout(() => {
+                window.location.href = 'Productos.html';
+            }, 1000);
+            
+        } else {
+            // ❌ Error - Mostrar mensaje
+            mostrarError(data.message || 'Error al iniciar sesión');
+            restaurarBoton();
         }
-
-        // Cambiar el botón mientras procesa
-        btn.disabled = true;
-        btn.textContent = 'Iniciando sesión...';
-
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(datos)
-            });
-
-            const resultado = await response.json();
-
-            if (response.ok) {
-                console.log('✅ Inicio de sesión exitoso');
-
-                // Guardar información (opcional, si tu backend devuelve usuario)
-                localStorage.setItem("sesionActiva", "true");
-
-                // Mostrar mensaje de éxito
-                errorDiv.className = 'bg-green-50 border-green-200 text-green-800 px-4 py-3 rounded-lg';
-                errormsg.textContent = 'Inicio de sesión correcto, redirigiendo...';
-                errorDiv.classList.remove('hidden');
-
-                // Redirigir a productos
-                setTimeout(() => window.location.href = 'productos.html', 2000);
-
-            } else {
-                errormsg.textContent = resultado.message || 'Credenciales incorrectas';
-                errorDiv.classList.remove('hidden');
-                btn.disabled = false;
-                btn.textContent = 'Iniciar Sesión';
-            }
-
-        } catch (error) {
-            console.error('❌ Error de conexión con el servidor', error);
-            errormsg.textContent = 'Error de conexión con el servidor';
-            errorDiv.classList.remove('hidden');
-            btn.disabled = false;
-            btn.textContent = 'Iniciar Sesión';
-        }
-
-    });
-
+        
+    } catch (error) {
+        console.error('❌ Error:', error);
+        mostrarError('Error de conexión con el servidor');
+        restaurarBoton();
+    }
 });
+
+function mostrarError(mensaje) {
+    loginError.classList.remove('hidden');
+    loginErrorMessage.textContent = mensaje;
+}
+
+function restaurarBoton() {
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = `
+        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+        </svg>
+        Iniciar Sesión
+    `;
+    loginBtn.classList.remove('from-green-600', 'to-green-700');
+    loginBtn.classList.add('from-blue-600', 'to-purple-600');
+}

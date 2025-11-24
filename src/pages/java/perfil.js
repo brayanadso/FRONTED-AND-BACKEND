@@ -1,102 +1,63 @@
+document.addEventListener("DOMContentLoaded", () => {
 
+    const userIcon = document.getElementById("user-icon");
+    const userInitial = document.getElementById("user-initial");
+    const loginBtn = document.getElementById("login-btn");
+    const userMenu = document.getElementById("user-menu");
 
-document.addEventListener("DOMContentLoaded", async()=>{
-    const sesionactiva=localStorage.getItem("sesionactiva");
-    const contenedor=document.getElementById("user-menu-container");
+    // Leer usuario del localStorage
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-    // si no existe el contenedor
-    if(!contenedor) return;
+    if (usuario) {
 
-    //sesion activa
-    if(!sesionactiva)return;
+        // --- Iniciales (2 letras) ---
+        const nombre = usuario.Nombre || "";
+        const apellido = usuario.Apellido || "";
+        const iniciales =
+            `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
 
-    //vamos a traer los datos de la BD
-    const perfil= JSON.parse(localStorage.getItem("usuario"));
-    if (!perfil || !perfil.email) return;
+        userInitial.textContent = iniciales;
 
-    try {
-        const res= await fetch("http://localhost:8081/api/obtener",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({email:perfil.email})
+        // Mostrar icono de usuario
+        userIcon.classList.remove("hidden");
+
+        // Ocultar login
+        loginBtn.classList.add("hidden");
+
+        // Abrir y cerrar menú
+        userIcon.addEventListener("click", (e) => {
+            e.stopPropagation(); 
+            userMenu.classList.toggle("hidden");
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error ("no se pudo obtener el perfil");
-        usuario = data.usuario;
-    } catch (error) {
-        console.error ("error al obtener el perfil",error);
-        
-        // cerrar sesion fallida
 
-        localStorage.clear();
-        window.location.href="../pages/login.html";
-        return;
+        // Cerrar menú cuando se hace click afuera
+        document.addEventListener("click", (e) => {
+            if (!userIcon.contains(e.target)) {
+                userMenu.classList.add("hidden");
+            }
+        });
+    } else {
+        // Si no hay usuario → ocultar icono
+        userIcon.classList.add("hidden");
+        loginBtn.classList.remove("hidden");
     }
-
-    //crear el menu del usuario
-
-    contenedor.innerHTML=`
-    <div class = "relative">
-    <button id="user-menu-btn"
-    class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md hover:scale-105 transition-transform">
-    <spam id="user-avatar"></spam>
-    </button>
-
-    <div id="user-dropdown"
-    class="hidden absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-2xl border-gray-100 py-2 z-50 transition-all duration-200 ease-out overflow-hidden transform origin-top scale-95 opacity-0">
-          <div class="px-4 py-3 border-b border-gray-200">
-                    <p class="text-sm font-semibold text-gray-900" id="user-name"></p>
-                    <p class="text-xs text-gray-500" id="user-email"></p>
-                </div>
-
-                <a href="../pages/perfil.html"
-                    class="flex items-center px-4 py-3 text-sm text-gray-700 
-                           hover:bg-blue-100 hover:text-blue-800 
-                           active:bg-blue-200 transition-all duration-150 rounded-md cursor-pointer">
-                    Mi Perfil
-                </a>
-
-                <button id="logout-btn"
-                    class="flex items-center w-full px-4 py-3 text-sm text-gre-600
-                           hover:bg-blue-100 hover:text-blue-800 
-                           active:bg-blue-200 transition-all duration-150 rounded-md cursor-pointer">
-                    Cerrar sesión
-                </button>
-            </div>
-        </div>
-    `;
 });
 
-// INSERTAR DATOS EN EL MENÚ
-    
-    document.getElementById("user-name").textContent =
-       
 
-    document.getElementById("user-email").textContent = usuario.email;
+// --- CERRAR SESIÓN ---
+function cerrarSesion() {
 
-    const avatar = '${usuario.nombre[0]}${usuario.apellido[0]}'.toUpperCase();
-    document.getElementById("user-avatar").textContent = avatar;
+    localStorage.removeItem("usuario");
 
-    
-    // ⭐ 4. ANIMACIÓN ABRIR/CERRAR
-    
-    document.getElementById("user-menu-btn").addEventListener("click", () => {
-        const drop = document.getElementById("user-dropdown");
+    // Animación (solo si tienes el toast)
+    const toast = document.getElementById("logout-toast");
+    if (toast) {
+        toast.classList.remove("hidden");
+        toast.classList.add("opacity-100");
 
-        if (drop.classList.contains("hidden")) {
-            drop.classList.remove("hidden");
+        setTimeout(() => toast.classList.remove("opacity-100"), 1200);
+    }
 
-            setTimeout(() => {
-                drop.classList.remove("opacity-0", "scale-95");
-                drop.classList.add("opacity-100", "scale-100");
-            }, 20);
-
-        } else {
-            drop.classList.remove("opacity-100", "scale-100");
-            drop.classList.add("opacity-0", "scale-95");
-
-            setTimeout(() => {
-                drop.classList.add("hidden");
-            }, 150);
-        }
-    });
+    // Ir al login o productos
+    setTimeout(() => window.location.href = "login.html", 1500);
+}
