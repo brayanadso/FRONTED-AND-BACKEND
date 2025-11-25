@@ -52,9 +52,9 @@ form.addEventListener('submit', async (e) => {
             loginBtn.classList.remove('from-blue-600', 'to-purple-600');
             loginBtn.classList.add('from-green-600', 'to-green-700');
             
-            // Redirigir después de 1 segundo
+            // ⚠️ CORRECCIÓN: nombre del archivo en minúscula
             setTimeout(() => {
-                window.location.href = 'Productos.html';
+                window.location.href = 'productos.html';
             }, 1000);
             
         } else {
