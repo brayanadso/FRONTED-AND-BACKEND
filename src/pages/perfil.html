@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Mi Perfil</h1>
+            <a href="index.html" class="text-blue-600 hover:text-blue-700">← Volver al inicio</a>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        
+        <!-- Tarjeta de Perfil -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+            
+            <!-- Header con iniciales -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
+                <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 font-bold text-3xl mb-4 shadow-xl">
+                    <span id="iniciales-perfil" class="text-blue-600">JL</span>
+                </div>
+                <h2 id="nombre-completo" class="text-white text-2xl font-bold">jimy lombana</h2>
+                <p id="correo-perfil" class="text-blue-100 mt-1">andrea@gmail.com</p>
+            </div>
+
+            <!-- Formulario de Edición -->
+            <form id="form-perfil" class="p-8">
+                <div class="space-y-6">
+                    
+                    <!-- Nombre -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Nombre</label>
+                            <input 
+                                type="text" 
+                                id="input-nombre" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 transition-all"
+                                placeholder="Tu nombre"
+                                disabled
+                                required
+                            >
+                        </div>
+                        
+                        <!-- Apellido -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Apellido</label>
+                            <input 
+                                type="text" 
+                                id="input-apellido" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 transition-all"
+                                placeholder="Tu apellido"
+                                disabled
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Correo -->
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Correo Electrónico</label>
+                        <input 
+                            type="email" 
+                            id="input-correo" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 transition-all"
+                            placeholder="tu@email.com"
+                            disabled
+                            required
+                        >
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Teléfono</label>
+                        <input 
+                            type="tel" 
+                            id="input-telefono" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 transition-all"
+                            placeholder="3201234567"
+                            disabled
+                        >
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div id="botones-vista" class="flex gap-4 pt-4">
+                        <button 
+                            type="button"
+                            id="btn-editar" 
+                            class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            ✏️ Editar Perfil
+                        </button>
+                    </div>
+
+                    <div id="botones-edicion" class="hidden gap-4 pt-4">
+                        <button 
+                            type="submit" 
+                            class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            💾 Guardar Cambios
+                        </button>
+                        
+                        <button 
+                            type="button" 
+                            id="btn-cancelar"
+                            class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all shadow-md hover:shadow-lg">
+                            ✖️ Cancelar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Zona Peligrosa -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-red-200">
+            <div class="bg-red-50 px-6 py-4 border-b border-red-200">
+                <h3 class="text-red-700 font-bold text-lg">⚠️ Zona Peligrosa</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-600 mb-4">
+                    Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate antes de continuar.
+                </p>
+                <button 
+                    id="btn-eliminar-cuenta"
+                    class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-all shadow-md hover:shadow-lg">
+                    🗑️ Eliminar mi cuenta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id="modal-eliminar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
+            <div class="bg-red-600 px-6 py-4">
+                <h3 class="text-white font-bold text-xl">⚠️ Confirmar Eliminación</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-700 mb-6">
+                    ¿Estás completamente seguro de que deseas eliminar tu cuenta? 
+                    <strong class="text-red-600">Esta acción no se puede deshacer.</strong>
+                    <br><br>
+                    Tu cuenta será eliminada permanentemente de la base de datos.
+                </p>
+                <div class="flex gap-4">
+                    <button 
+                        id="confirmar-eliminar"
+                        class="flex-1 bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-all">
+                        Sí, eliminar
+                    </button>
+                    <button 
+                        id="cancelar-eliminar"
+                        class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400 transition-all">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificaciones -->
+    <div id="toast" class="hidden fixed top-4 right-4 bg-white rounded-lg shadow-2xl p-4 z-50 transform transition-all duration-300">
+        <div class="flex items-center gap-3">
+            <div id="toast-icon"></div>
+            <p id="toast-message" class="font-semibold"></p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DEL BACKEND
+        // ============================================
+        const API_URL = 'http://localhost:8081/api'; // ✅ CORREGIDO AL PUERTO 8081
+
+        // ============================================
+        // CARGAR DATOS DEL USUARIO
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarDatosUsuario();
+            configurarEventos();
+        });
+
+        function cargarDatosUsuario() {
+            const usuarioGuardado = localStorage.getItem('usuario');
+            
+            if (!usuarioGuardado) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const usuario = JSON.parse(usuarioGuardado);
+                
+                // Rellenar formulario
+                document.getElementById('input-nombre').value = usuario.Nombre || '';
+                document.getElementById('input-apellido').value = usuario.Apellido || '';
+                document.getElementById('input-correo').value = usuario.Correo || '';
+                document.getElementById('input-telefono').value = usuario.Telefono || '';
+                
+                // Actualizar visualización
+                actualizarVisualizacion(usuario);
+                
+            } catch (error) {
+                console.error('Error al cargar usuario:', error);
+                mostrarToast('❌ Error al cargar datos', 'error');
+            }
+        }
+
+        function actualizarVisualizacion(usuario) {
+            // Iniciales
+            const iniciales = obtenerIniciales(usuario.Nombre, usuario.Apellido);
+            document.getElementById('iniciales-perfil').textContent = iniciales;
+            
+            // Nombre completo
+            document.getElementById('nombre-completo').textContent = 
+                `${usuario.Nombre || ''} ${usuario.Apellido || ''}`.trim();
+            
+            // Correo
+            document.getElementById('correo-perfil').textContent = usuario.Correo || '';
+        }
+
+        function obtenerIniciales(nombre, apellido) {
+            const inicial1 = nombre ? nombre.trim().charAt(0).toUpperCase() : '';
+            const inicial2 = apellido ? apellido.trim().charAt(0).toUpperCase() : '';
+            return inicial1 + inicial2 || '👤';
+        }
+
+        // ============================================
+        // GUARDAR CAMBIOS
+        // ============================================
+        
+        function configurarEventos() {
+            // Botón Editar
+            document.getElementById('btn-editar').addEventListener('click', activarModoEdicion);
+
+            // Guardar cambios
+            document.getElementById('form-perfil').addEventListener('submit', function(e) {
+                e.preventDefault();
+                guardarCambios();
+            });
+
+            // Cancelar
+            document.getElementById('btn-cancelar').addEventListener('click', function() {
+                desactivarModoEdicion();
+                cargarDatosUsuario();
+                mostrarToast('ℹ️ Cambios cancelados', 'info');
+            });
+
+            // Eliminar cuenta
+            document.getElementById('btn-eliminar-cuenta').addEventListener('click', mostrarModalEliminar);
+            document.getElementById('cancelar-eliminar').addEventListener('click', ocultarModalEliminar);
+            document.getElementById('confirmar-eliminar').addEventListener('click', eliminarCuenta);
+        }
+
+        // ============================================
+        // MODO EDICIÓN
+        // ============================================
+        
+        function activarModoEdicion() {
+            const inputs = ['input-nombre', 'input-apellido', 'input-correo', 'input-telefono'];
+            inputs.forEach(id => {
+                const input = document.getElementById(id);
+                input.disabled = false;
+                input.classList.remove('bg-gray-50');
+                input.classList.add('bg-white', 'focus:ring-2', 'focus:ring-blue-500', 'focus:border-transparent');
+            });
+
+            document.getElementById('botones-vista').classList.add('hidden');
+            document.getElementById('botones-edicion').classList.remove('hidden');
+            document.getElementById('botones-edicion').classList.add('flex');
+
+            mostrarToast('✏️ Modo edición activado', 'info');
+        }
+
+        function desactivarModoEdicion() {
+            const inputs = ['input-nombre', 'input-apellido', 'input-correo', 'input-telefono'];
+            inputs.forEach(id => {
+                const input = document.getElementById(id);
+                input.disabled = true;
+                input.classList.add('bg-gray-50');
+                input.classList.remove('bg-white', 'focus:ring-2', 'focus:ring-blue-500', 'focus:border-transparent');
+            });
+
+            document.getElementById('botones-edicion').classList.add('hidden');
+            document.getElementById('botones-edicion').classList.remove('flex');
+            document.getElementById('botones-vista').classList.remove('hidden');
+        }
+
+        function guardarCambios() {
+            const nombre = document.getElementById('input-nombre').value.trim();
+            const apellido = document.getElementById('input-apellido').value.trim();
+            const correo = document.getElementById('input-correo').value.trim();
+            const telefono = document.getElementById('input-telefono').value.trim();
+
+            if (!nombre || !apellido || !correo) {
+                mostrarToast('⚠️ Por favor completa todos los campos obligatorios', 'warning');
+                return;
+            }
+
+            const usuarioActualizado = {
+                Nombre: nombre,
+                Apellido: apellido,
+                Correo: correo,
+                Telefono: telefono
+            };
+
+            try {
+                localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+                actualizarVisualizacion(usuarioActualizado);
+                desactivarModoEdicion();
+                mostrarToast('✅ Perfil actualizado correctamente', 'success');
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                mostrarToast('❌ Error al guardar cambios', 'error');
+            }
+        }
+
+        // ============================================
+        // ELIMINAR CUENTA - ✅ CORREGIDO
+        // ============================================
+        
+        function mostrarModalEliminar() {
+            document.getElementById('modal-eliminar').classList.remove('hidden');
+        }
+
+        function ocultarModalEliminar() {
+            document.getElementById('modal-eliminar').classList.add('hidden');
+        }
+
+        async function eliminarCuenta() {
+            ocultarModalEliminar();
+            mostrarToast('🔄 Eliminando cuenta...', 'info');
+            
+            try {
+                const usuario = JSON.parse(localStorage.getItem('usuario'));
+                
+                // ✅ Buscar ID en diferentes formatos
+                const userId = usuario._id || usuario.id;
+                
+                console.log('📋 Usuario completo:', usuario);
+                console.log('🔍 ID a usar:', userId);
+                
+                if (!userId) {
+                    console.error('❌ No se encontró ID');
+                    mostrarToast('❌ Error: No se pudo obtener el ID del usuario', 'error');
+                    return;
+                }
+                
+                console.log('🗑️ Eliminando cuenta con ID:', userId);
+                
+                // ✅ PUERTO CORREGIDO A 8081
+                const response = await fetch(`${API_URL}/perfil/eliminar`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: userId })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    console.log('✅ Cuenta eliminada de la base de datos');
+                    
+                    // Eliminar del localStorage
+                    const usuariosRegistrados = JSON.parse(localStorage.getItem('usuarios')) || [];
+                    const usuariosFiltrados = usuariosRegistrados.filter(u => u.Correo !== usuario.Correo);
+                    localStorage.setItem('usuarios', JSON.stringify(usuariosFiltrados));
+                    
+                    // Eliminar sesión actual
+                    localStorage.removeItem('usuario');
+                    localStorage.removeItem('cart');
+                    
+                    mostrarToast('✅ Cuenta eliminada correctamente', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'registro.html';
+                    }, 2000);
+                    
+                } else {
+                    console.error('❌ Error del servidor:', data.message);
+                    mostrarToast('❌ ' + data.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error al eliminar cuenta:', error);
+                mostrarToast('❌ Error de conexión con el servidor', 'error');
+            }
+        }
+
+        // ============================================
+        // SISTEMA DE TOASTS
+        // ============================================
+        
+        function mostrarToast(mensaje, tipo = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+            
+            const configs = {
+                success: { bg: 'bg-green-500', icon: '✅' },
+                error: { bg: 'bg-red-500', icon: '❌' },
+                warning: { bg: 'bg-yellow-500', icon: '⚠️' },
+                info: { bg: 'bg-blue-500', icon: 'ℹ️' }
+            };
+            
+            const config = configs[tipo] || configs.info;
+            
+            toastIcon.innerHTML = `<div class="${config.bg} text-white rounded-full w-8 h-8 flex items-center justify-center text-xl">${config.icon}</div>`;
+            toastMessage.textContent = mensaje;
+            
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

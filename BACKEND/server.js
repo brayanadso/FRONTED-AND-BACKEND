@@ -6,7 +6,6 @@ import productosRouter from "./routes/productos.js";
 import userRoutes from "./routes/User.js";
 import { loginUsuario } from "./controllers/login.js";
 import PerfilRouter from "./routes/perfil.js";
-import { obtenerPerfil } from "./controllers/perfil.js";
 
 const app = express();
 
@@ -19,9 +18,9 @@ app.get("/", (req, res) => {
 
 // Rutas
 app.use("/api/productos", productosRouter);
-app.use("/api/users", userRoutes); // <-- aquí está el registro
+app.use("/api/users", userRoutes);
 app.post("/api/login", loginUsuario);
-app.use("/api/perfil", obtenerPerfil);
+app.use("/api/perfil", PerfilRouter); // ✅ CORREGIDO: Ahora usa el router completo
 
 app.listen(8081, () => {
   console.log("🔥 Servidor corriendo en http://localhost:8081");

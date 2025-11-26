@@ -36,11 +36,29 @@ form.addEventListener('submit', async (e) => {
         });
         
         const data = await response.json();
-        console.log('Respuesta del servidor:', data);
+        console.log('📥 Respuesta completa del servidor:', data);
+        console.log('👤 Usuario recibido:', data.usuario);
+        console.log('📋 Propiedades del usuario:', data.usuario ? Object.keys(data.usuario) : 'No hay usuario');
         
         if (response.ok) {
             // ✅ Login exitoso - Guardar datos del usuario
-            localStorage.setItem('usuario', JSON.stringify(data.usuario));
+            const usuarioGuardar = data.usuario;
+            
+            // 🔍 VERIFICAR SI VIENE EL APELLIDO
+            console.log('🔍 Verificando datos a guardar:');
+            console.log('   - Nombre:', usuarioGuardar.Nombre);
+            console.log('   - Apellido:', usuarioGuardar.Apellido);
+            console.log('   - Correo:', usuarioGuardar.Correo);
+            console.log('   - Telefono:', usuarioGuardar.Telefono);
+            
+            // Si el servidor NO devuelve el apellido, necesitamos pedirlo
+            if (!usuarioGuardar.Apellido) {
+                console.warn('⚠️ EL SERVIDOR NO ESTÁ DEVOLVIENDO EL APELLIDO');
+                console.warn('⚠️ Necesitas modificar tu backend para que incluya el Apellido en la respuesta');
+            }
+            
+            localStorage.setItem('usuario', JSON.stringify(usuarioGuardar));
+            console.log('💾 Usuario guardado en localStorage:', usuarioGuardar);
             
             // Mostrar mensaje de éxito
             loginBtn.innerHTML = `
@@ -52,7 +70,6 @@ form.addEventListener('submit', async (e) => {
             loginBtn.classList.remove('from-blue-600', 'to-purple-600');
             loginBtn.classList.add('from-green-600', 'to-green-700');
             
-            // ⚠️ CORRECCIÓN: nombre del archivo en minúscula
             setTimeout(() => {
                 window.location.href = 'productos.html';
             }, 1000);
