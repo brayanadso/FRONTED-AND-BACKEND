@@ -1,14 +1,10 @@
+// routes/User.js
 import express from 'express';
-import { registrarUser } from '../controllers/User.js';  // ✅ Cambiar a registrarUser
+import { registrarUser, obtenerUsuarios } from '../controllers/User.js';
 
 const router = express.Router();
 
-router.post('/register', registrarUser);  // ✅ Usar registrarUser
+router.post('/registro', registrarUser);
+router.get('/', obtenerUsuarios);
 
 export default router;
-
-// Importa la nueva función
-import { obtenerPerfil, actualizarPerfil, eliminarCuenta } from "../controllers/perfil.js";
-
-// Agrega esta nueva ruta
-router.delete("/eliminar", eliminarCuenta);

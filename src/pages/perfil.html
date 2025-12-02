@@ -27,8 +27,8 @@
                 <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 font-bold text-3xl mb-4 shadow-xl">
                     <span id="iniciales-perfil" class="text-blue-600">JL</span>
                 </div>
-                <h2 id="nombre-completo" class="text-white text-2xl font-bold">jimy lombana</h2>
-                <p id="correo-perfil" class="text-blue-100 mt-1">andrea@gmail.com</p>
+                <h2 id="nombre-completo" class="text-white text-2xl font-bold">Usuario</h2>
+                <p id="correo-perfil" class="text-blue-100 mt-1">correo@example.com</p>
             </div>
 
             <!-- Formulario de Edición -->
@@ -175,7 +175,7 @@
         // ============================================
         // CONFIGURACIÓN DEL BACKEND
         // ============================================
-        const API_URL = 'http://localhost:8081/api'; // ✅ CORREGIDO AL PUERTO 8081
+        const API_URL = 'http://localhost:8081/api';
 
         // ============================================
         // CARGAR DATOS DEL USUARIO
@@ -232,7 +232,7 @@
         }
 
         // ============================================
-        // GUARDAR CAMBIOS
+        // CONFIGURAR EVENTOS
         // ============================================
         
         function configurarEventos() {
@@ -292,37 +292,92 @@
             document.getElementById('botones-vista').classList.remove('hidden');
         }
 
-        function guardarCambios() {
+        // ============================================
+        // GUARDAR CAMBIOS
+        // ============================================
+        
+        async function guardarCambios() {
             const nombre = document.getElementById('input-nombre').value.trim();
             const apellido = document.getElementById('input-apellido').value.trim();
             const correo = document.getElementById('input-correo').value.trim();
             const telefono = document.getElementById('input-telefono').value.trim();
+
+            console.log('📝 Datos del formulario:', { nombre, apellido, correo, telefono });
 
             if (!nombre || !apellido || !correo) {
                 mostrarToast('⚠️ Por favor completa todos los campos obligatorios', 'warning');
                 return;
             }
 
-            const usuarioActualizado = {
-                Nombre: nombre,
-                Apellido: apellido,
-                Correo: correo,
-                Telefono: telefono
-            };
-
             try {
-                localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
-                actualizarVisualizacion(usuarioActualizado);
-                desactivarModoEdicion();
-                mostrarToast('✅ Perfil actualizado correctamente', 'success');
+                const usuario = JSON.parse(localStorage.getItem('usuario'));
+                console.log('👤 Usuario desde localStorage:', usuario);
+                
+                const userId = usuario._id || usuario.id;
+                console.log('🆔 ID extraído:', userId);
+
+                if (!userId) {
+                    console.error('❌ No se encontró ID en el usuario');
+                    mostrarToast('❌ Error: Inicia sesión nuevamente', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    return;
+                }
+
+                mostrarToast('🔄 Actualizando perfil...', 'info');
+
+                const datosAEnviar = {
+                    id: userId,
+                    Nombre: nombre,
+                    Apellido: apellido,
+                    Correo: correo,
+                    Telefono: telefono
+                };
+                
+                console.log('📤 Enviando al backend:', datosAEnviar);
+
+                const response = await fetch(`${API_URL}/perfil/actualizar`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosAEnviar)
+                });
+
+                console.log('📡 Status de respuesta:', response.status);
+                
+                const data = await response.json();
+                console.log('📥 Respuesta del servidor:', data);
+
+                if (response.ok) {
+                    console.log('✅ Perfil actualizado en la base de datos');
+                    
+                    // Actualizar localStorage con los datos del servidor
+                    const usuarioActualizado = {
+                        ...usuario,
+                        ...data.data
+                    };
+                    
+                    console.log('💾 Guardando en localStorage:', usuarioActualizado);
+                    localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+                    actualizarVisualizacion(usuarioActualizado);
+                    desactivarModoEdicion();
+                    mostrarToast('✅ Perfil actualizado correctamente', 'success');
+                    
+                } else {
+                    console.error('❌ Error del servidor:', data.message);
+                    mostrarToast('❌ ' + data.message, 'error');
+                }
+                
             } catch (error) {
-                console.error('Error al guardar:', error);
-                mostrarToast('❌ Error al guardar cambios', 'error');
+                console.error('❌ Error completo:', error);
+                mostrarToast('❌ Error de conexión con el servidor', 'error');
             }
         }
 
         // ============================================
-        // ELIMINAR CUENTA - ✅ CORREGIDO
+        // ELIMINAR CUENTA
         // ============================================
         
         function mostrarModalEliminar() {
@@ -339,12 +394,9 @@
             
             try {
                 const usuario = JSON.parse(localStorage.getItem('usuario'));
-                
-                // ✅ Buscar ID en diferentes formatos
                 const userId = usuario._id || usuario.id;
                 
-                console.log('📋 Usuario completo:', usuario);
-                console.log('🔍 ID a usar:', userId);
+                console.log('🗑️ Eliminando cuenta con ID:', userId);
                 
                 if (!userId) {
                     console.error('❌ No se encontró ID');
@@ -352,9 +404,6 @@
                     return;
                 }
                 
-                console.log('🗑️ Eliminando cuenta con ID:', userId);
-                
-                // ✅ PUERTO CORREGIDO A 8081
                 const response = await fetch(`${API_URL}/perfil/eliminar`, {
                     method: 'DELETE',
                     headers: {
@@ -367,11 +416,6 @@
                 
                 if (response.ok) {
                     console.log('✅ Cuenta eliminada de la base de datos');
-                    
-                    // Eliminar del localStorage
-                    const usuariosRegistrados = JSON.parse(localStorage.getItem('usuarios')) || [];
-                    const usuariosFiltrados = usuariosRegistrados.filter(u => u.Correo !== usuario.Correo);
-                    localStorage.setItem('usuarios', JSON.stringify(usuariosFiltrados));
                     
                     // Eliminar sesión actual
                     localStorage.removeItem('usuario');

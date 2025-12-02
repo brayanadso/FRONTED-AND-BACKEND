@@ -1,7 +1,19 @@
+// db/db.js
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
-const uri = "mongodb+srv://brayan_ortiz:Brayan1282@cluster0.jl8dqjk.mongodb.net/TIENDA?retryWrites=true&w=majority";
+dotenv.config();
 
-mongoose.connect(uri)
-.then(()=> console.log(" ✅ Conectado a la base de datos "))
-.catch(err => console.error(" ❌ Error de conexion a la base de datos ", err));
+const uri = process.env.MONGODB_URI;
+
+const connectDB = async () => {
+    try {
+        await mongoose.connect(uri);
+        console.log("✅ Conectado a la base de datos MongoDB Atlas");
+    } catch (err) {
+        console.error("❌ Error de conexión a la base de datos:", err);
+        process.exit(1);
+    }
+};
+
+export default connectDB;
