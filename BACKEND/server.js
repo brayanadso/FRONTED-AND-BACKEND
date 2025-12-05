@@ -26,6 +26,11 @@ app.use(express.urlencoded({ extended: true }));
 // Conectar a MongoDB
 connectDB();
 
+//primera ruta
+app.get('/', (req, res) => {
+    res.send('¡Bienvenido al curso de node express!');
+});
+
 // Rutas
 app.use('/api/login', loginRoutes);
 app.use('/api/perfil', perfilRoutes);
