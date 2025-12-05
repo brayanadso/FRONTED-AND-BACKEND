@@ -1,4 +1,3 @@
-// models/User.js
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
@@ -26,7 +25,10 @@ const userSchema = new mongoose.Schema({
     Telefono: {
         type: String,
         default: ''
-    }
+    },
+    // Nuevos campos para la recuperación de contraseña
+    resetPasswordCode: String, // Para almacenar el código de 6 dígitos
+    resetPasswordExpires: Date // Para almacenar el tiempo de expiración
 }, {
     timestamps: true,
     versionKey: false
@@ -36,6 +38,9 @@ const userSchema = new mongoose.Schema({
 userSchema.methods.toJSON = function() {
     const user = this.toObject();
     delete user.Password;
+    // Opcional: también podrías eliminar los campos de código temporal si no quieres exponerlos
+    delete user.resetPasswordCode;
+    delete user.resetPasswordExpires;
     return user;
 };
 

@@ -1,197 +1,216 @@
-import bcrypt from 'bcrypt';
-import nodemailer from 'nodemailer';
-import user from '../models/User.js';
+import nodemailer from "nodemailer";
+import bcrypt from "bcrypt";
+import User from "../models/User.js";
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'bo719914@gmail.com', // Reemplaza con tu correo electrónico
-        pass: 'Brayan1282' // 
+// Almacenamiento temporal de códigos (en producción usa Redis o la BD)
+const codigosRecuperacion = new Map();
+
+// 1. Enviar código de recuperación
+export const enviarCodigo = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ ok: false, mensaje: "Email requerido" });
     }
-});
 
-// Función para enviar el correo de recuperación
-const generarcodigo=() =>{
-    return Math.floor(100000 + Math.random() * 900000).toString(); // Genera un código de 6 dígitos
-
-}
-
-export const solicitarcodigo = async (req, res) => {
-     try  {
-        const { email } = req.body;
-        if (!email) {
-            return res.status(400).json({ message: 'El correo electrónico es obligatorio' 
-        });
-        }
-
-        //buscar usuario
-        const usuario = await user.findOne( { email } );
+    try {
+        // Verificar que el email existe en la base de datos
+        const usuario = await User.findOne({ Correo: email.toLowerCase() });
+        
         if (!usuario) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
+            return res.status(404).json({ 
+                ok: false, 
+                mensaje: "No existe una cuenta con este correo electrónico" 
+            });
         }
 
-        // Generar código de recuperación
-        const codigo = generarcodigo();
+        // Generar código de 6 dígitos
+        const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Guardar código con expiración de 10 minutos
+        codigosRecuperacion.set(email.toLowerCase(), {
+            codigo,
+            expira: Date.now() + 10 * 60 * 1000 // 10 minutos
+        });
 
-        // Guardar el código con expiracion de 15 minutos
-        usuario.codigoRecuperacion = codigo;
-        usuario.expiracionCodigo = Date.now() + 900000; // 15 minutos en milisegundos
-        await usuario.save();
-    
+        // Configurar transporter
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        // Opciones del correo con HTML mejorado
         const mailOptions = {
-            from: 'osorioescobardavidfelipe@gmail.com',
-            to: usuario.email,
-            subject: 'Código de recuperación-TechStore',
+            from: `"Sistema de Recuperación" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "🔐 Código de recuperación de contraseña",
             html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;>
-            <div style="text-align: center; margin-bottom: 30px;">
-            <h2 style="color: #4F46E5; margin: 0;">TechStore Pro</h2>
-            </div>
-
-            <h3 style="color: #333;">Recuperacion de contraseña</h3>
-            <p>Hola <strong> ${usuario.nombre}</strong>,</p>
-            <p>Has solicitado recuperar tu contraseña. Utiliza el siguiente código para restablecerla:</p>
-            <p> Tu código de recuperación es: </p>
-            <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin: 30px 0;">
-            <h1 style="color: black;
-            font-size: 36px;
-            letter-spacing: 8px;
-            margin: 0;
-            font-family:monospace;">
-            ${codigo}
-            </h1>
-            </div>
-            <p style="color: #666; font-size: 14px;">
-            Este codigo expirara en <strong>15 minutos</strong>.
-            </p>
-            
-            <p style="color: #666; font-size: 14px;">
-            Si no solicitaste este cambio, puedes ignorar este correo.
-            </p>
-
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
-
-            <p style="color: #999; font-size: 12px; text-align: center;">
-            &copy; 2025 TechStore Pro. Todos los derechos reservados.
-            </p>
-            </div>
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f9f9f9;">
+                    <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h2 style="color: #333; text-align: center;">Recuperación de Contraseña</h2>
+                        <p style="color: #666; font-size: 16px;">Hola <strong>${usuario.Nombre}</strong>,</p>
+                        <p style="color: #666; font-size: 16px;">Hemos recibido una solicitud para restablecer tu contraseña.</p>
+                        
+                        <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; text-align: center; margin: 30px 0;">
+                            <p style="color: #666; margin-bottom: 10px;">Tu código de verificación es:</p>
+                            <h1 style="color: #4CAF50; letter-spacing: 8px; margin: 10px 0; font-size: 36px;">${codigo}</h1>
+                        </div>
+                        
+                        <p style="color: #666; font-size: 14px;">⏰ Este código expirará en <strong>10 minutos</strong>.</p>
+                        <p style="color: #999; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                            Si no solicitaste este código, puedes ignorar este correo de forma segura.
+                        </p>
+                    </div>
+                </div>
             `
         };
 
-        // Enviar el correo
         await transporter.sendMail(mailOptions);
 
-        console.log('Código de recuperación enviado a ${usuario.email}: ${codigo}');
-        res.status(200).json({ message: 'Código de recuperación enviado al correo electrónico' 
+        console.log(`✅ Código enviado a ${email}: ${codigo}`);
 
+        res.json({ 
+            ok: true, 
+            mensaje: "Código enviado correctamente. Revisa tu email."
         });
-    } catch (error) {
-        console.error('Error al solicitar el código de recuperación:', error);
-        res.status(500).json({ message: 'Error del servidor', error: error.message 
 
+    } catch (error) {
+        console.error("❌ Error al enviar correo:", error);
+        res.status(500).json({ 
+            ok: false, 
+            mensaje: "Error al enviar el correo. Intenta nuevamente." 
         });
     }
 };
-//verificar codigo y cambiar contraseña
-export const cambiarpassword  = async (req, res) => {
+
+// 2. Verificar código
+export const verificarCodigo = async (req, res) => {
+    const { email, codigo } = req.body;
+
+    if (!email || !codigo) {
+        return res.status(400).json({ 
+            ok: false, 
+            mensaje: "Email y código requeridos" 
+        });
+    }
+
     try {
-        const { email, codigo, nuevaPassword } = req.body;
+        const datosRecuperacion = codigosRecuperacion.get(email.toLowerCase());
 
-        //validaciones
-        if (!email || !codigo || !nuevaPassword) {
-            return res.status(400).json({ message: 'Todos los campos son obligatorios' });
-        }
-
-        if (nuevaPassword.length < 6) {
-            return res.status(400).json({ message: 'La nueva contraseña debe tener al menos 6 caracteres'
-                
+        if (!datosRecuperacion) {
+            return res.status(404).json({ 
+                ok: false, 
+                mensaje: "Código no encontrado o expirado" 
             });
         }
-         //buscar usuario
-        const usuario = await user.findOne( { email } );
-        if (!usuario) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
+
+        // Verificar si el código expiró
+        if (Date.now() > datosRecuperacion.expira) {
+            codigosRecuperacion.delete(email.toLowerCase());
+            return res.status(400).json({ 
+                ok: false, 
+                mensaje: "El código ha expirado. Solicita uno nuevo." 
+            });
         }
-        
 
+        // Verificar si el código coincide
+        if (datosRecuperacion.codigo !== codigo.toString()) {
+            return res.status(400).json({ 
+                ok: false, 
+                mensaje: "Código incorrecto" 
+            });
+        }
 
+        res.json({ 
+            ok: true, 
+            mensaje: "Código verificado correctamente"
+        });
 
-
-
-        //encriptar nueva contraseña
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(nuevaPassword, salt);
-
-        // actualizar contraseña y limpiar codigo
-        usuario.password = hashedPassword;
-        usuario.codigoRecuperacion = undefined;
-        usuario.codigoExpiracion = undefined;
-        await usuario.save();
-
-        //email de confirmacion
-        const mailOptions = {
-            from: 'osorioescobardavidfelipe@gmail.com',
-            to: usuario.email,
-            subject: 'Contraseña cambiada - TechStore',
-            html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-            <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: inlne-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;">
-            <span style="color: white; font-size: 30px;">✓</span>
-            </div>
-            <h2 style="color: #4F46E5; margin: 0;">Contraseña Actualizada</h2>
-            </div>
-
-            <p>Hola <strong>${usuario.nombre}</strong>,</p>
-            <p>Tu contraseña ha sido cambiada exitosamente.</p>
-            <p> Ya puedes iniciar sesión con tu nueva contraseña.</p>
-
-            <div style="text-align: center; margin: 30px 0;">
-            <a href="https://127.0.0.1:5500/src/pages/login.html">
-            style="background: linear-gradient(to right, #4F46E5, #7C3AED);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 8px;
-            text-decoration: none;
-            border-radius: 8px;
-            display: inline-block;
-            Iniciar Sesión
-            </a>
-            </div>
-
-            <p style="color: #dc2626; font-size: 14px;">
-            Si no realizaste este cambio, por favor contacta a nuestro soporte inmediatamente.
-            </p>
-            
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
-            <p style="color: #999; font-size: 12px; text-align: center;">
-            &copy; 2025 TechStore Pro. Todos los derechos reservados.
-            </p>
-            </div>
-            `
-        };
-
-        // enviar mensaje de contraseña actualizada
-        await transporter.sendMail(mailOptions);
-
-        res.status(200).json({ message: 'Contraseña cambiada exitosamente'
-
-         });
     } catch (error) {
-        console.error('Error al cambiar la contraseña:', error);
-        res.status(500).json({ message: 'Error del servidor', error: error.message 
+        console.error("❌ Error al verificar código:", error);
+        res.status(500).json({ 
+            ok: false, 
+            mensaje: "Error al verificar el código" 
+        });
+    }
+};
 
+// 3. Cambiar contraseña
+export const cambiarContrasena = async (req, res) => {
+    const { email, codigo, nuevaContrasena } = req.body;
+
+    if (!email || !codigo || !nuevaContrasena) {
+        return res.status(400).json({ 
+            ok: false, 
+            mensaje: "Todos los campos son requeridos" 
+        });
+    }
+
+    if (nuevaContrasena.length < 6) {
+        return res.status(400).json({ 
+            ok: false, 
+            mensaje: "La contraseña debe tener al menos 6 caracteres" 
+        });
+    }
+
+    try {
+        const datosRecuperacion = codigosRecuperacion.get(email.toLowerCase());
+
+        if (!datosRecuperacion || datosRecuperacion.codigo !== codigo.toString()) {
+            return res.status(400).json({ 
+                ok: false, 
+                mensaje: "Código inválido o expirado" 
+            });
+        }
+
+        // Verificar expiración
+        if (Date.now() > datosRecuperacion.expira) {
+            codigosRecuperacion.delete(email.toLowerCase());
+            return res.status(400).json({ 
+                ok: false, 
+                mensaje: "El código ha expirado" 
+            });
+        }
+
+        // Verificar que el usuario existe
+        const usuario = await User.findOne({ Correo: email.toLowerCase() });
+        
+        if (!usuario) {
+            return res.status(404).json({ 
+                ok: false, 
+                mensaje: "Usuario no encontrado" 
+            });
+        }
+
+        // Encriptar nueva contraseña
+        const salt = await bcrypt.genSalt(10);
+        const contrasenaEncriptada = await bcrypt.hash(nuevaContrasena, salt);
+
+        // Actualizar contraseña en MongoDB
+        await User.findOneAndUpdate(
+            { Correo: email.toLowerCase() },
+            { Password: contrasenaEncriptada },
+            { new: true }
+        );
+
+        // Eliminar código usado
+        codigosRecuperacion.delete(email.toLowerCase());
+
+        console.log(`✅ Contraseña actualizada para ${email}`);
+
+        res.json({ 
+            ok: true, 
+            mensaje: "Contraseña actualizada correctamente. Ya puedes iniciar sesión." 
+        });
+
+    } catch (error) {
+        console.error("❌ Error al cambiar contraseña:", error);
+        res.status(500).json({ 
+            ok: false, 
+            mensaje: "Error al cambiar la contraseña" 
         });
     }
 };

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8081/api/users/register';
+const API_URL = 'http://localhost:8081/api/users/registro'; // ← CORREGIDO
 
 const form = document.getElementById('register-form');
 
@@ -19,7 +19,7 @@ form.addEventListener('submit', async (e) => {
         Password: document.getElementById('password').value
     };
     
-    console.log('📤 Datos:', datos);
+    console.log('📤 Datos a enviar:', datos);
     
     // Validación
     if (datos.Password.length < 6) {
@@ -33,6 +33,8 @@ form.addEventListener('submit', async (e) => {
     }
     
     try {
+        console.log('🌐 Enviando petición a:', API_URL);
+        
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
@@ -42,15 +44,15 @@ form.addEventListener('submit', async (e) => {
         });
         
         const data = await response.json();
-        console.log('📥 Respuesta:', data);
+        console.log('📥 Respuesta del servidor:', data);
         
         if (response.ok) {
             // ✅ Éxito
             Swal.fire({
                 icon: 'success',
-                title: '¡Cuenta creada!',
+                title: '¡Cuenta creada exitosamente!',
                 text: 'Redirigiendo al login...',
-                timer: 1500,
+                timer: 2000,
                 showConfirmButton: false
             });
 
@@ -58,23 +60,25 @@ form.addEventListener('submit', async (e) => {
 
             setTimeout(() => {
                 window.location.href = 'login.html';
-            }, 1500);
+            }, 2000);
 
         } else {
             // ❌ Error del servidor (correo duplicado, campos inválidos, etc)
             Swal.fire({
                 icon: 'error',
                 title: 'Error al registrar',
-                text: data.message || 'Intenta nuevamente'
+                text: data.message || data.error || 'Intenta nuevamente',
+                confirmButtonColor: '#8B5CF6'
             });
         }
         
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('❌ Error de conexión:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error de conexión',
-            text: 'No se pudo conectar con el servidor'
+            text: 'No se pudo conectar con el servidor. Verifica que esté corriendo en el puerto 8081',
+            confirmButtonColor: '#8B5CF6'
         });
     }
 });
