@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8081/api/users/registro'; // ← CORREGIDO
+const API_URL = 'https://fronted-and-backend.onrender.com/api/users/registro'; // ← CORREGIDO
 
 const form = document.getElementById('register-form');
 

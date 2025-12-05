@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8081/api/login';
+const API_URL = 'https://fronted-and-backend.onrender.com/api/login';
 
 const form = document.getElementById('login-form');
 const loginError = document.getElementById('login-error');

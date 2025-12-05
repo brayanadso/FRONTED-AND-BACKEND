@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8081/api/productos';
+const API_URL = 'https://fronted-and-backend.onrender.com/api/productos';
 
 async function cargarProductos() {
     try {
