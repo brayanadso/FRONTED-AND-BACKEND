@@ -1,16 +1,18 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 export const loginUsuario = async (req, res) => {
   try {
-    const { Correo, Password } = req.body;
+    const { email, password } = req.body;
 
-    if (!Correo || !Password) {
+    if (!email || !password) {
       return res.status(400).json({ message: "Correo y contraseña obligatorios" });
     }
 
-    const usuario = await User.findOne({ Correo });
-    
+    // ✅ Buscar por "Correo" que es el campo en el modelo
+    const usuario = await User.findOne({ Correo: email });
+
     if (!usuario) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
@@ -19,21 +21,30 @@ export const loginUsuario = async (req, res) => {
       return res.status(500).json({ message: "Error: contraseña no guardada" });
     }
 
-    const valid = await bcrypt.compare(Password, usuario.Password);
-    
+    const valid = await bcrypt.compare(password, usuario.Password);
+
     if (!valid) {
       return res.status(401).json({ message: "Contraseña incorrecta" });
     }
 
-    // ✅ CORREGIDO: Devolver _id, Apellido y Telefono
+    // ✅ Generar token JWT
+    const token = jwt.sign(
+      { id: usuario._id, rol: usuario.rol },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // ✅ Devolver token + datos del usuario
     res.status(200).json({
       message: "Inicio de sesión correcto",
+      token,
       usuario: {
-        _id: usuario._id,           // ← Cambié "id" por "_id"
+        _id: usuario._id,
         Nombre: usuario.Nombre,
-        Apellido: usuario.Apellido, // ← Agregado
+        Apellido: usuario.Apellido,
         Correo: usuario.Correo,
-        Telefono: usuario.Telefono  // ← Agregado
+        Telefono: usuario.Telefono,
+        rol: usuario.rol,
       }
     });
 

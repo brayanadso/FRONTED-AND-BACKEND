@@ -1,15 +1,19 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+
+
+import { Routes, Route } from 'react-router-dom'
 import Home from './components/Pages/Home.jsx'
 import Register from './components/Auth/Register.jsx'
+import Login from './components/Auth/Login.jsx'
+import Perfil from './components/Pages/Perfil.jsx'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Home/>}/>
-        <Route path='/register' element={<Register/>}/>
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path='/' element={<Home />} />
+      <Route path='/register' element={<Register />} />
+      <Route path='/login' element={<Login />} />
+      <Route path='/perfil' element={<Perfil />} />
+    </Routes>
   )
 }
 

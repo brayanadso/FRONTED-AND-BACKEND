@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+
+    rol : {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
+    },
     // Nuevos campos para la recuperación de contraseña
     resetPasswordCode: String, // Para almacenar el código de 6 dígitos
     resetPasswordExpires: Date // Para almacenar el tiempo de expiración

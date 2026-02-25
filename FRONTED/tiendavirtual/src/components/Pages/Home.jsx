@@ -4,6 +4,7 @@ import Categoria from "../Home/Categoria.jsx"
 import Newsletter from "../Home/Newsletter.jsx"
 import Footer from "../Layout/Footer.jsx"
 import Featureproducts from "../Home/Featureproducts.jsx"
+import Contacto from "../Home/Contacto.jsx"
 
 export default function Home() {
     return(
@@ -12,9 +13,10 @@ export default function Home() {
         <Hero/>
         <Categoria/>
         <Featureproducts/>
+        <Contacto/>
         <Newsletter/>
         <Footer/>
+        
         </>
     );
 }
-
