@@ -13,7 +13,7 @@ function Footer() {
                             <h3 className="text-xl font-bold">TechStore Pro</h3>
                         </div>
                         <p className="text-gray-400 mb-4">
-                            Tu tienda de tecnología de confianza con los mejores productos y precios.
+                            Tu tienda de tecnologíaaaaa de confianza con los mejores productos y precios.
                         </p>
                     </div>
 
