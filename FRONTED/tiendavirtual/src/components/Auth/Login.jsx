@@ -123,9 +123,10 @@ export default function Login() {
                                 />
                                 Recordarme
                             </label>
+                            {/* ✅ CORREGIDO: ruta de /recuperar a /forgot-password */}
                             <button
                                 type="button"
-                                onClick={() => navigate('/recuperar')}
+                                onClick={() => navigate('/forgot-password')}
                                 className="text-sm text-blue-600 hover:underline font-medium"
                             >
                                 ¿Olvidaste tu contraseña?

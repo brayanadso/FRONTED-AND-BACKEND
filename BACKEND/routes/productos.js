@@ -1,18 +1,16 @@
 import express from 'express';
-import { crearProducto, obtenerProductos } from '../controllers/producto.js';
+import {
+  crearProducto,
+  obtenerProductos,
+  actualizarProducto, // ✅ añadido
+  eliminarProducto    // ✅ añadido
+} from '../controllers/producto.js';
 
 const router = express.Router();
 
-//Rutas para registrar productos
+router.get("/",     obtenerProductos);   // público
+router.post("/",    crearProducto);      // solo admin
+router.put("/:id",  actualizarProducto); // ✅ solo admin
+router.delete("/:id", eliminarProducto); // ✅ solo admin
 
-router.post("/", crearProducto);
-
-//Rutas para traer los productos
-
-router.get("/", obtenerProductos);
-
-export default router ;
-
-
-
-
+export default router;

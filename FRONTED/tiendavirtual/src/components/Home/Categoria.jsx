@@ -20,7 +20,18 @@ function Categories() {
     }
   ];
 
-return (
+  // ✅ CORREGIDO: función declarada (antes causaba crash por no estar definida)
+  const handleCategoryClick = (categoryId) => {
+    const section = document.getElementById(categoryId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // Redirige a productos filtrando por categoría si no hay sección con ese id
+      window.location.href = `#productos?categoria=${categoryId}`;
+    }
+  };
+
+  return (
     <section id="categorias" className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
@@ -44,13 +55,13 @@ return (
               <p className="text-gray-600 mb-6">
                 {category.description}
               </p>
-              <div className="text-blue-600 font-semibold">Ver más -----</div>
+              <div className="text-blue-600 font-semibold">Ver más →</div>
             </div>
           ))}
         </div>
       </div>
     </section>
   );
-};
+}
 
 export default Categories;

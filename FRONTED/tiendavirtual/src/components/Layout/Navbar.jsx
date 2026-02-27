@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { ShoppingCart, User, Menu, X, LogOut, ChevronDown, Settings } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+
+// Mapeo de nombre visible → id de la sección en Home
+const NAV_ITEMS = [
+  { label: "Inicio",      section: "inicio" },
+  { label: "Productos",   section: "productos" },
+  { label: "Categorias",  section: "categorias" },
+  { label: "Contacto",    section: "contacto" },
+];
 
 function Navbar() {
   const [cartCount, setCartCount] = useState(0);
@@ -9,8 +17,9 @@ function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // ✅ Leer usuario del localStorage al cargar
+  // Leer usuario del localStorage al cargar
   useEffect(() => {
     const stored = localStorage.getItem("usuario");
     if (stored) {
@@ -18,7 +27,7 @@ function Navbar() {
     }
   }, []);
 
-  // ✅ Cerrar dropdown si se hace click fuera
+  // Cerrar dropdown si se hace click fuera
   useEffect(() => {
     function handleClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -29,7 +38,39 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ Cerrar sesión
+  // Cuando navegamos a "/" con un hash pendiente, hacer scroll
+  useEffect(() => {
+    if (location.pathname === "/") {
+      const hash = location.hash; // ej: "#categorias"
+      if (hash) {
+        // Pequeño delay para que el DOM de Home esté listo
+        setTimeout(() => {
+          const el = document.querySelector(hash);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 100);
+      }
+    }
+  }, [location]);
+
+  // Navegar a una sección: scroll directo si ya estamos en "/", redirigir si no
+  const handleNavClick = (e, section) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+
+    if (location.pathname === "/") {
+      // Ya estamos en Home → scroll suave directo
+      const el = document.getElementById(section);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      // Estamos en otra página → ir a Home con el hash
+      navigate(`/#${section}`);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("usuario");
     localStorage.removeItem("token");
@@ -58,13 +99,14 @@ function Navbar() {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex space-x-6">
-              {["Inicio", "Productos", "Categorias", "Contacto"].map((item) => (
+              {NAV_ITEMS.map(({ label, section }) => (
                 <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
+                  key={section}
+                  href={`/#${section}`}
+                  onClick={(e) => handleNavClick(e, section)}
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative group"
                 >
-                  {item}
+                  {label}
                   <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
                 </a>
               ))}
@@ -87,7 +129,7 @@ function Navbar() {
               )}
             </a>
 
-            {/* ✅ Si hay usuario: mostrar nombre + dropdown */}
+            {/* Si hay usuario: mostrar nombre + dropdown */}
             {usuario ? (
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -103,7 +145,6 @@ function Navbar() {
                 {/* Dropdown */}
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
-                    {/* Info usuario */}
                     <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-semibold text-gray-900">{usuario.Nombre} {usuario.Apellido}</p>
                       <p className="text-xs text-gray-500 truncate">{usuario.Correo}</p>
@@ -114,7 +155,6 @@ function Navbar() {
                       )}
                     </div>
 
-                    {/* Opciones */}
                     <Link
                       to="/perfil"
                       onClick={() => setDropdownOpen(false)}
@@ -146,7 +186,6 @@ function Navbar() {
                 )}
               </div>
             ) : (
-              /* ✅ Si NO hay usuario: botón Login */
               <Link to="/login">
                 <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium text-sm hover:scale-105 transition-all duration-300">
                   <User className="w-4 h-4" />
@@ -173,18 +212,17 @@ function Navbar() {
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 py-4 border-t border-gray-200">
             <div className="flex flex-col space-y-4">
-              {["Inicio", "Productos", "Categorias", "Contacto"].map((item) => (
+              {NAV_ITEMS.map(({ label, section }) => (
                 <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  onClick={() => setMobileMenuOpen(false)}
+                  key={section}
+                  href={`/#${section}`}
+                  onClick={(e) => handleNavClick(e, section)}
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 py-2"
                 >
-                  {item}
+                  {label}
                 </a>
               ))}
 
-              {/* Mobile: si hay usuario mostrar logout, si no mostrar login */}
               {usuario ? (
                 <button
                   onClick={handleLogout}
