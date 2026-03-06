@@ -1,8 +1,8 @@
-
+// routes/pedidos.js
 import express from 'express';
 import {
     crearPedido,
-    obtenerpedidousuarioId,  // ✅ CORREGIDO: rutas faltantes añadidas
+    obtenerpedidousuarioId,
     obtenerpedido,
     actualizarEstadopedido
 } from '../controllers/pedidos.js';
@@ -12,19 +12,13 @@ const router = express.Router();
 // Crear un nuevo pedido
 router.post('/', crearPedido);
 
-// ✅ CORREGIDO: obtener pedidos por usuario (faltaba esta ruta)
+// Obtener pedidos por usuario
 router.get('/usuario/:userId', obtenerpedidousuarioId);
 
-// ✅ CORREGIDO: obtener un pedido por id (faltaba esta ruta)
+// Obtener un pedido por id
 router.get('/:id', obtenerpedido);
 
-// ✅ CORREGIDO: actualizar estado del pedido (faltaba esta ruta)
+// Actualizar estado del pedido
 router.put('/:id/estado', actualizarEstadopedido);
 
 export default router;
-
-// routes/pedidos.js
-import { verifyToken, verifyAdmin } from "../middlewares/auth_middlewares.js";
-
-router.post("/",          verifyToken, crearPedido);
-router.get("/admin/todos",verifyToken, verifyAdmin, obtenerTodosPedidos); // ruta futura de admin

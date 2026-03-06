@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ShoppingCart, User, Menu, X, LogOut, ChevronDown, Settings } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext.jsx";
 import CarritoSidebar from "../Cart/CarritoSidebar.jsx";
 
@@ -11,6 +11,7 @@ function Navbar() {
   const [carritoOpen, setCarritoOpen]       = useState(false);
   const dropdownRef = useRef(null);
   const navigate    = useNavigate();
+  const location    = useLocation();
   const { totalItems } = useCart();
 
   useEffect(() => {
@@ -36,6 +37,29 @@ function Navbar() {
     navigate("/login");
   };
 
+  // ✅ Si estamos en la home, hace scroll al ancla
+  // Si estamos en otra página, navega a / y luego hace scroll
+  const handleNavLink = (anchor) => {
+    setMobileMenuOpen(false);
+    if (location.pathname === "/") {
+      const el = document.getElementById(anchor);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/");
+      setTimeout(() => {
+        const el = document.getElementById(anchor);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }
+  };
+
+  const navItems = [
+    { label: "Inicio",     anchor: "inicio" },
+    { label: "Productos",  anchor: "productos" },
+    { label: "Categorias", anchor: "categorias" },
+    { label: "Contacto",   anchor: "contacto" },
+  ];
+
   return (
     <>
       <header className="bg-white shadow-lg sticky top-0 z-50">
@@ -53,13 +77,16 @@ function Navbar() {
                   TechStore Pro
                 </h1>
               </Link>
+
+              {/* ✅ Desktop links con scroll inteligente */}
               <div className="hidden md:flex space-x-6">
-                {["Inicio", "Productos", "Categorias", "Contacto"].map((item) => (
-                  <a key={item} href={`#${item.toLowerCase()}`}
+                {navItems.map((item) => (
+                  <button key={item.anchor}
+                    onClick={() => handleNavLink(item.anchor)}
                     className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative group">
-                    {item}
+                    {item.label}
                     <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>
@@ -128,14 +155,16 @@ function Navbar() {
             </div>
           </div>
 
+          {/* Mobile menu */}
           {mobileMenuOpen && (
             <div className="md:hidden mt-4 py-4 border-t border-gray-200">
               <div className="flex flex-col space-y-4">
-                {["Inicio", "Productos", "Categorias", "Contacto"].map((item) => (
-                  <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMobileMenuOpen(false)}
-                    className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 py-2">
-                    {item}
-                  </a>
+                {navItems.map((item) => (
+                  <button key={item.anchor}
+                    onClick={() => handleNavLink(item.anchor)}
+                    className="text-left text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 py-2">
+                    {item.label}
+                  </button>
                 ))}
                 {usuario ? (
                   <button onClick={handleLogout} className="flex items-center gap-2 text-red-600 font-medium py-2">

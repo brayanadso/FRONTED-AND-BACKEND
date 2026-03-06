@@ -1,17 +1,20 @@
+// ─────────────────────────────────────────────────────────────
+// Login.jsx  →  src/components/Auth/Login.jsx
+// ─────────────────────────────────────────────────────────────
+// CORRECCIÓN: navigate('/recuperar') → navigate('/forgot-password')
+// ─────────────────────────────────────────────────────────────
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { User, Mail, Lock, Eye, EyeOff, LogIn, Loader2, Shield } from "lucide-react";
 
 export default function Login() {
-
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail]             = useState('');
+    const [password, setPassword]       = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState({ type: '', text: '' });
-
+    const [rememberMe, setRememberMe]   = useState(false);
+    const [loading, setLoading]         = useState(false);
+    const [message, setMessage]         = useState({ type: '', text: '' });
     const navigate = useNavigate();
 
     async function handleSubmit(e) {
@@ -26,22 +29,15 @@ export default function Login() {
             );
 
             const data = response.data;
-
             localStorage.setItem('token', data.token);
             localStorage.setItem('usuario', JSON.stringify(data.usuario));
-
             setMessage({ type: 'success', text: '¡Inicio de sesión correcto!' });
 
             setTimeout(() => {
-                if (data.usuario.rol === 'admin') {
-                    navigate('/admin');
-                } else {
-                    navigate('/');
-                }
+                navigate(data.usuario.rol === 'admin' ? '/admin' : '/');
             }, 1000);
 
         } catch (error) {
-            console.error('Error:', error);
             setMessage({
                 type: 'error',
                 text: error.response?.data?.message || 'Error al iniciar sesión'
@@ -56,84 +52,58 @@ export default function Login() {
             <div className="w-full max-w-md">
                 <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
 
-                    {/* Header */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-4">
                             <User className="w-8 h-8 text-white" />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                            ¡Bienvenido de vuelta!
-                        </h2>
-                        <p className="text-gray-600">
-                            Inicia sesión en tu cuenta de TechStore Pro
-                        </p>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-2">¡Bienvenido de vuelta!</h2>
+                        <p className="text-gray-600">Inicia sesión en tu cuenta de TechStore Pro</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
 
-                        {/* Email */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 <Mail className="w-4 h-4 inline mr-2 text-gray-400" />
                                 Correo electrónico
                             </label>
-                            <input
-                                type="email"
-                                placeholder="tu@email.com"
-                                value={email}
+                            <input type="email" placeholder="tu@email.com" value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                                required
-                            />
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+                                required />
                         </div>
 
-                        {/* Password */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 <Lock className="w-4 h-4 inline mr-2 text-gray-400" />
                                 Contraseña
                             </label>
                             <div className="relative">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={e => setPassword(e.target.value)}
+                                <input type={showPassword ? "text" : "password"} placeholder="••••••••"
+                                    value={password} onChange={e => setPassword(e.target.value)}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 pr-12"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
+                                    required />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
                             </div>
                         </div>
 
-                        {/* Recordarme + Olvidaste contraseña */}
                         <div className="flex items-center justify-between">
                             <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={rememberMe}
+                                <input type="checkbox" checked={rememberMe}
                                     onChange={e => setRememberMe(e.target.checked)}
-                                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                                />
+                                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
                                 Recordarme
                             </label>
-                            {/* ✅ CORREGIDO: ruta de /recuperar a /forgot-password */}
-                            <button
-                                type="button"
-                                onClick={() => navigate('/forgot-password')}
-                                className="text-sm text-blue-600 hover:underline font-medium"
-                            >
+                            {/* ✅ CORREGIDO: /recuperar → /forgot-password */}
+                            <button type="button" onClick={() => navigate('/forgot-password')}
+                                className="text-sm text-blue-600 hover:underline font-medium">
                                 ¿Olvidaste tu contraseña?
                             </button>
                         </div>
 
-                        {/* Mensaje */}
                         {message.text && (
                             <div className={`p-4 rounded-lg text-sm ${
                                 message.type === 'success'
@@ -144,33 +114,20 @@ export default function Login() {
                             </div>
                         )}
 
-                        {/* Botón Ingresar */}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:scale-105 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : (
-                                <LogIn className="w-5 h-5" />
-                            )}
+                        <button type="submit" disabled={loading}
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:scale-105 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
                             <span>{loading ? 'Iniciando...' : 'INGRESAR'}</span>
                         </button>
 
-                        {/* Separador */}
                         <div className="flex items-center gap-3">
                             <div className="flex-1 h-px bg-gray-200"></div>
                             <span className="text-sm text-gray-400">O continúa con</span>
                             <div className="flex-1 h-px bg-gray-200"></div>
                         </div>
 
-                        {/* Google y Facebook */}
                         <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-gray-700"
-                            >
+                            <button type="button" className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-gray-700">
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -179,10 +136,7 @@ export default function Login() {
                                 </svg>
                                 Google
                             </button>
-                            <button
-                                type="button"
-                                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-gray-700"
-                            >
+                            <button type="button" className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-gray-700">
                                 <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
                                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                                 </svg>
@@ -190,18 +144,13 @@ export default function Login() {
                             </button>
                         </div>
 
-                        {/* Link registro */}
                         <p className="text-center text-sm text-gray-600">
                             ¿No tienes cuenta?{" "}
-                            <button
-                                type="button"
-                                onClick={() => navigate('/register')}
-                                className="text-blue-600 font-semibold hover:underline"
-                            >
+                            <button type="button" onClick={() => navigate('/register')}
+                                className="text-blue-600 font-semibold hover:underline">
                                 Regístrate aquí
                             </button>
                         </p>
-
                     </form>
                 </div>
 

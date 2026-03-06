@@ -5,23 +5,17 @@ import {
     actualizarPerfil,
     eliminarCuenta
 } from '../controllers/perfil.js';
+import { verifyToken, verifyOwnerOrAdmin } from '../middlewares/auth.middlewares.js';
 
 const router = express.Router();
 
 // 📍 GET - Obtener perfil por ID
-router.get('/:id', obtenerPerfil);
+router.get('/:id',         verifyToken, verifyOwnerOrAdmin, obtenerPerfil);
 
 // 📍 PUT - Actualizar perfil
-router.put('/actualizar', actualizarPerfil);
+router.put('/actualizar',  verifyToken, verifyOwnerOrAdmin, actualizarPerfil);
 
 // 📍 DELETE - Eliminar cuenta
-router.delete('/eliminar', eliminarCuenta);
+router.delete('/eliminar', verifyToken, verifyOwnerOrAdmin, eliminarCuenta);
 
 export default router;
-
-// routes/perfil.js
-import { verifyToken, verifyOwnerOrAdmin } from "../middlewares/auth_middlewares.js";
-
-router.get("/:id",        verifyToken, verifyOwnerOrAdmin, obtenerPerfil);
-router.put("/actualizar", verifyToken, verifyOwnerOrAdmin, actualizarPerfil);
-router.delete("/eliminar",verifyToken, verifyOwnerOrAdmin, eliminarCuenta);

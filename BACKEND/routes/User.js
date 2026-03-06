@@ -1,7 +1,7 @@
 // routes/User.js
 import express from 'express';
 import { registrarUser, obtenerUsuarios } from '../controllers/User.js';
-import { verifyToken, verifyAdmin } from '../middlewares/auth_middlewares.js';
+import { verifyToken, verifyAdmin } from '../middlewares/auth.middlewares.js';
 import User from '../models/User.js';
 
 const router = express.Router();

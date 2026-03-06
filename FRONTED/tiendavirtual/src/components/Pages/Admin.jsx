@@ -5,22 +5,24 @@ import {
   LayoutDashboard, Package, PlusCircle, LogOut,
   Trash2, Save, X, Upload, ShoppingBag,
   Users, ClipboardList, ImagePlus, CheckCircle,
-  AlertCircle, Loader2, TrendingUp
+  AlertCircle, Loader2, TrendingUp, UserX, CheckSquare
 } from "lucide-react";
 
 const API = "http://localhost:8081/api";
 
 export default function Admin() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab]           = useState("dashboard");
-  const [usuario, setUsuario]               = useState(null);
-  const [productos, setProductos]           = useState([]);
+  const [activeTab, setActiveTab]               = useState("dashboard");
+  const [usuario, setUsuario]                   = useState(null);
+  const [productos, setProductos]               = useState([]);
   const [loadingProductos, setLoadingProductos] = useState(false);
-  const [usuarios, setUsuarios]             = useState([]);
-  const [form, setForm]                     = useState({ Nombre: "", Descripcion: "", Precio: "", Image: "" });
-  const [imagenPreview, setImagenPreview]   = useState(null);
-  const [loadingForm, setLoadingForm]       = useState(false);
-  const [formMsg, setFormMsg]               = useState({ type: "", text: "" });
+  const [usuarios, setUsuarios]                 = useState([]);
+  const [pedidos, setPedidos]                   = useState([]);
+  const [loadingPedidos, setLoadingPedidos]     = useState(false);
+  const [form, setForm]                         = useState({ Nombre: "", Descripcion: "", Precio: "", Image: "" });
+  const [imagenPreview, setImagenPreview]       = useState(null);
+  const [loadingForm, setLoadingForm]           = useState(false);
+  const [formMsg, setFormMsg]                   = useState({ type: "", text: "" });
   const fileRef = useRef();
 
   // ── Auth Guard ──────────────────────────────────────────────
@@ -32,7 +34,11 @@ export default function Admin() {
     setUsuario(u);
   }, []);
 
-  useEffect(() => { fetchProductos(); fetchUsuarios(); }, []);
+  useEffect(() => {
+    fetchProductos();
+    fetchUsuarios();
+    fetchPedidos();
+  }, []);
 
   async function fetchProductos() {
     setLoadingProductos(true);
@@ -45,16 +51,73 @@ export default function Admin() {
 
   async function fetchUsuarios() {
     try {
-      const { data } = await axios.get(`${API}/users`);
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(`${API}/users`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setUsuarios(data.data || []);
-    } catch { /* silent */ }
+    } catch { setUsuarios([]); }
   }
 
-  // ── Compresión de imagen ────────────────────────────────────
+  async function fetchPedidos() {
+    setLoadingPedidos(true);
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(`${API}/admin/pedidos`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPedidos(data.data || []);
+    } catch { setPedidos([]); }
+    finally { setLoadingPedidos(false); }
+  }
+
+  // ── Confirmar compra (pendiente → completado) ───────────────
+  async function handleConfirmarCompra(id) {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(`${API}/admin/pedidos/${id}/estado`,
+        { estado: "completado" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPedidos(prev => prev.map(p => p._id === id ? { ...p, estado: "completado" } : p));
+    } catch (err) {
+      alert(err.response?.data?.message || "Error al confirmar el pedido");
+    }
+  }
+
+  // ── Cancelar pedido ─────────────────────────────────────────
+  async function handleCancelarPedido(id) {
+    if (!window.confirm("¿Cancelar este pedido?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(`${API}/admin/pedidos/${id}/estado`,
+        { estado: "cancelado" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPedidos(prev => prev.map(p => p._id === id ? { ...p, estado: "cancelado" } : p));
+    } catch (err) {
+      alert(err.response?.data?.message || "Error al cancelar el pedido");
+    }
+  }
+
+  // ── Eliminar usuario ────────────────────────────────────────
+  async function handleEliminarUsuario(id) {
+    if (!window.confirm("¿Eliminar este usuario? Esta acción no se puede deshacer.")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API}/admin/usuarios/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUsuarios(prev => prev.filter(u => u._id !== id));
+    } catch (err) {
+      alert(err.response?.data?.message || "Error al eliminar usuario");
+    }
+  }
+
+  // ── Imagen ──────────────────────────────────────────────────
   function handleImageFile(file) {
     if (!file) return;
     setFormMsg({ type: "", text: "" });
-
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -71,10 +134,9 @@ export default function Admin() {
         canvas.height = height;
         canvas.getContext("2d").drawImage(img, 0, 0, width, height);
         const compressed = canvas.toDataURL("image/jpeg", 0.55);
-
         const kb = Math.round(compressed.length * 0.75 / 1024);
         if (kb > 400) {
-          setFormMsg({ type: "error", text: `Imagen muy grande (${kb} KB). Usa una URL https:// en lugar de subir el archivo.` });
+          setFormMsg({ type: "error", text: `Imagen muy grande (${kb} KB). Usa una URL https://.` });
           return;
         }
         setImagenPreview(compressed);
@@ -94,13 +156,10 @@ export default function Admin() {
   async function handleGuardar(e) {
     e.preventDefault();
     setFormMsg({ type: "", text: "" });
-
     const imagenFinal = imagenPreview || form.Image;
-
     if (!form.Nombre.trim() || !form.Descripcion.trim() || !form.Precio || !imagenFinal) {
       return setFormMsg({ type: "error", text: "Todos los campos son obligatorios, incluyendo la imagen." });
     }
-
     setLoadingForm(true);
     try {
       const payload = {
@@ -110,17 +169,14 @@ export default function Admin() {
         Precio:      parseFloat(form.Precio),
         Image:       imagenFinal,
       };
-
       await axios.post(`${API}/productos`, payload);
-
       setFormMsg({ type: "success", text: "Producto guardado correctamente." });
       setForm({ Nombre: "", Descripcion: "", Precio: "", Image: "" });
       setImagenPreview(null);
       await fetchProductos();
       setTimeout(() => { setActiveTab("productos"); setFormMsg({ type: "", text: "" }); }, 1500);
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data?.detalle || err.message || "Error desconocido.";
-      setFormMsg({ type: "error", text: msg });
+      setFormMsg({ type: "error", text: err.response?.data?.message || err.message || "Error desconocido." });
     } finally {
       setLoadingForm(false);
     }
@@ -145,17 +201,30 @@ export default function Admin() {
 
   if (!usuario) return null;
 
+  const pedidosPendientes = pedidos.filter(p => p.estado === "pendiente").length;
+
   const stats = [
     { label: "Productos", value: productos.length, sub: "En catálogo",      icon: <Package className="w-7 h-7" />,      color: "from-blue-500 to-blue-700" },
-    { label: "Pedidos",   value: 0,                sub: "Total registrados", icon: <ClipboardList className="w-7 h-7" />, color: "from-emerald-500 to-emerald-700" },
-    { label: "Usuarios",  value: usuarios.length,  sub: "Registrados",       icon: <Users className="w-7 h-7" />,        color: "from-violet-500 to-violet-700" },
+    { label: "Pedidos",   value: pedidos.length,   sub: `${pedidosPendientes} pendientes`, icon: <ClipboardList className="w-7 h-7" />, color: "from-emerald-500 to-emerald-700" },
+    { label: "Usuarios",  value: usuarios.length,  sub: "Registrados",      icon: <Users className="w-7 h-7" />,        color: "from-violet-500 to-violet-700" },
   ];
 
   const tabs = [
-    { id: "dashboard", label: "Dashboard",                       icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: "productos", label: `Productos (${productos.length})`, icon: <Package className="w-4 h-4" /> },
-    { id: "agregar",   label: "Agregar producto",                icon: <PlusCircle className="w-4 h-4" /> },
+    { id: "dashboard", label: "Dashboard",                         icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: "productos", label: `Productos (${productos.length})`,   icon: <Package className="w-4 h-4" /> },
+    { id: "agregar",   label: "Agregar producto",                  icon: <PlusCircle className="w-4 h-4" /> },
+    { id: "pedidos",   label: `Pedidos${pedidosPendientes > 0 ? ` (${pedidosPendientes} 🔴)` : ""}`, icon: <ClipboardList className="w-4 h-4" /> },
+    { id: "usuarios",  label: `Usuarios (${usuarios.length})`,     icon: <Users className="w-4 h-4" /> },
   ];
+
+  const estadoBadge = (estado) => {
+    const map = {
+      pendiente:  "bg-yellow-100 text-yellow-700",
+      completado: "bg-green-100 text-green-700",
+      cancelado:  "bg-red-100 text-red-600",
+    };
+    return map[estado] || "bg-gray-100 text-gray-600";
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -205,10 +274,10 @@ export default function Admin() {
 
         {/* Tabs */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="flex border-b border-gray-100">
+          <div className="flex border-b border-gray-100 overflow-x-auto">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 text-sm font-semibold transition-all border-b-2 ${
+                className={`flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${
                   activeTab === tab.id
                     ? "border-violet-600 text-violet-700 bg-violet-50"
                     : "border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50"
@@ -227,10 +296,13 @@ export default function Admin() {
                   <TrendingUp className="w-8 h-8 text-violet-600" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">Resumen del sistema</h3>
-                <p className="text-gray-400 text-sm mb-6">Gestiona productos desde las pestañas de arriba.</p>
-                <div className="flex gap-3 justify-center">
+                <p className="text-gray-400 text-sm mb-6">Gestiona tu tienda desde las pestañas de arriba.</p>
+                <div className="flex gap-3 justify-center flex-wrap">
                   <button onClick={() => setActiveTab("productos")} className="px-5 py-2 bg-blue-50 text-blue-700 rounded-xl text-sm font-semibold hover:bg-blue-100 transition">
                     Ver productos
+                  </button>
+                  <button onClick={() => setActiveTab("pedidos")} className="px-5 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-semibold hover:bg-emerald-100 transition">
+                    Ver pedidos {pedidosPendientes > 0 && <span className="ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{pedidosPendientes}</span>}
                   </button>
                   <button onClick={() => setActiveTab("agregar")} className="px-5 py-2 bg-violet-600 text-white rounded-xl text-sm font-semibold hover:bg-violet-700 transition">
                     Agregar producto
@@ -258,9 +330,6 @@ export default function Admin() {
                   <div className="text-center py-16 text-gray-400">
                     <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
                     <p className="text-sm">No hay productos aún.</p>
-                    <button onClick={() => setActiveTab("agregar")} className="mt-3 text-violet-600 text-sm font-semibold hover:underline">
-                      Agregar el primero →
-                    </button>
                   </div>
                 ) : (
                   <div className="overflow-x-auto rounded-xl border border-gray-100">
@@ -306,11 +375,173 @@ export default function Admin() {
               </div>
             )}
 
+            {/* PEDIDOS */}
+            {activeTab === "pedidos" && (
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-lg font-bold text-gray-900">Gestión de pedidos</h2>
+                  {pedidosPendientes > 0 && (
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold">
+                      {pedidosPendientes} pendiente{pedidosPendientes > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
+
+                {loadingPedidos ? (
+                  <div className="text-center py-16">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-violet-400" />
+                    <p className="text-gray-400 text-sm">Cargando pedidos...</p>
+                  </div>
+                ) : pedidos.length === 0 ? (
+                  <div className="text-center py-16 text-gray-400">
+                    <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">No hay pedidos aún.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {pedidos.map(pedido => (
+                      <div key={pedido._id} className={`border rounded-2xl p-5 transition ${
+                        pedido.estado === "pendiente" ? "border-yellow-200 bg-yellow-50" :
+                        pedido.estado === "completado" ? "border-green-200 bg-green-50" :
+                        "border-red-200 bg-red-50"
+                      }`}>
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${estadoBadge(pedido.estado)}`}>
+                                {pedido.estado.toUpperCase()}
+                              </span>
+                              <span className="text-xs text-gray-400">#{pedido._id.slice(-8).toUpperCase()}</span>
+                            </div>
+                            <p className="font-semibold text-gray-800">{pedido.nombreCliente}</p>
+                            <p className="text-sm text-gray-500">📞 {pedido.telefono}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {new Date(pedido.fecha).toLocaleDateString("es-CO", {
+                                year: "numeric", month: "long", day: "numeric",
+                                hour: "2-digit", minute: "2-digit"
+                              })}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-gray-900">
+                              ${Number(pedido.total).toLocaleString("es-CO")}
+                            </p>
+                            <p className="text-xs text-gray-400">{pedido.productos?.length} producto(s)</p>
+                          </div>
+                        </div>
+
+                        {/* Productos del pedido */}
+                        <div className="mt-3 pt-3 border-t border-white border-opacity-60">
+                          <div className="space-y-1">
+                            {pedido.productos?.map((prod, i) => (
+                              <div key={i} className="flex justify-between text-sm text-gray-600">
+                                <span>{prod.nombre} x{prod.cantidad}</span>
+                                <span className="font-medium">${Number(prod.precio * prod.cantidad).toLocaleString("es-CO")}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Botones solo para pendientes */}
+                        {pedido.estado === "pendiente" && (
+                          <div className="flex gap-3 mt-4">
+                            <button
+                              onClick={() => handleConfirmarCompra(pedido._id)}
+                              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-semibold transition shadow-sm"
+                            >
+                              <CheckSquare className="w-4 h-4" />
+                              Confirmar compra
+                            </button>
+                            <button
+                              onClick={() => handleCancelarPedido(pedido._id)}
+                              className="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl text-sm font-semibold transition"
+                            >
+                              <X className="w-4 h-4" />
+                              Cancelar
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* USUARIOS */}
+            {activeTab === "usuarios" && (
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-lg font-bold text-gray-900">Usuarios registrados</h2>
+                  <span className="px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-semibold">
+                    {usuarios.length} total
+                  </span>
+                </div>
+
+                {usuarios.length === 0 ? (
+                  <div className="text-center py-16 text-gray-400">
+                    <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">No hay usuarios registrados.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-gray-100">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+                          <th className="px-4 py-3 text-left">Usuario</th>
+                          <th className="px-4 py-3 text-left">Correo</th>
+                          <th className="px-4 py-3 text-left">Teléfono</th>
+                          <th className="px-4 py-3 text-center">Rol</th>
+                          <th className="px-4 py-3 text-right">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {usuarios.map(u => (
+                          <tr key={u._id} className="hover:bg-gray-50 transition">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-violet-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                  {u.Nombre?.charAt(0)}{u.Apellido?.charAt(0)}
+                                </div>
+                                <span className="font-semibold text-gray-800">{u.Nombre} {u.Apellido}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-gray-500">{u.Correo}</td>
+                            <td className="px-4 py-3 text-gray-500">{u.Telefono || "—"}</td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                                u.rol === "admin"
+                                  ? "bg-violet-100 text-violet-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}>
+                                {u.rol}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex justify-end">
+                                {u._id !== usuario._id ? (
+                                  <button onClick={() => handleEliminarUsuario(u._id)}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100 transition">
+                                    <UserX className="w-3.5 h-3.5" /> Eliminar
+                                  </button>
+                                ) : (
+                                  <span className="text-xs text-gray-400 italic px-3">Tú</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* AGREGAR PRODUCTO */}
             {activeTab === "agregar" && (
               <div className="max-w-xl mx-auto">
                 <h2 className="text-lg font-bold text-gray-900 mb-6">Agregar nuevo producto</h2>
-
                 <form onSubmit={handleGuardar} className="space-y-5">
 
                   <div>
@@ -337,7 +568,6 @@ export default function Admin() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Imagen del producto *</label>
-
                     <input type="url" value={imagenPreview ? "" : form.Image}
                       onChange={e => { setForm(f => ({ ...f, Image: e.target.value })); setImagenPreview(null); }}
                       placeholder="https://... (URL de la imagen)"
@@ -391,7 +621,6 @@ export default function Admin() {
                       ? <><Loader2 className="w-5 h-5 animate-spin" /> Guardando...</>
                       : <><Save className="w-5 h-5" /> Guardar producto</>}
                   </button>
-
                 </form>
               </div>
             )}
