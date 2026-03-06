@@ -18,3 +18,10 @@ router.put('/actualizar', actualizarPerfil);
 router.delete('/eliminar', eliminarCuenta);
 
 export default router;
+
+// routes/perfil.js
+import { verifyToken, verifyOwnerOrAdmin } from "../middlewares/auth_middlewares.js";
+
+router.get("/:id",        verifyToken, verifyOwnerOrAdmin, obtenerPerfil);
+router.put("/actualizar", verifyToken, verifyOwnerOrAdmin, actualizarPerfil);
+router.delete("/eliminar",verifyToken, verifyOwnerOrAdmin, eliminarCuenta);

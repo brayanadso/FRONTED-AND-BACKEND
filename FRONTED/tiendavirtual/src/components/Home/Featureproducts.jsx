@@ -1,136 +1,83 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { ShoppingCart, Loader2, PackageX } from "lucide-react";
+import { useCart } from "../context/CartContext.jsx";
 
 function FeaturedProducts() {
-  const [cart, setCart] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [added, setAdded]       = useState({});
+  const { addToCart }           = useCart();
 
-  const products = [
-    {
-      id: "macbook-pro-m3",
-      name: "MacBook Pro M3",
-      description: "Potencia profesional para creativos y desarrolladores",
-      image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600",
-      price: 2499000,
-      originalPrice: 2899000,
-      discount: "-15%",
-      rating: 5,
-      reviews: 128,
-      badge: "discount",
-    },
-    {
-      id: "iphone-15-pro",
-      name: "iPhone 15 Pro",
-      description: "El smartphone más avanzado con chip A17 Pro",
-      image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600",
-      price: 1199000,
-      originalPrice: null,
-      discount: null,
-      rating: 5,
-      reviews: 89,
-      badge: "new",
-    },
-    {
-      id: "rtx-4070-super",
-      name: "RTX 4070 Super",
-      description: "Tarjeta gráfica de nueva generación para gaming",
-      image: "https://images.unsplash.com/photo-1580894894513-541e068a3e2b?w=600",
-      price: 599000,
-      originalPrice: 749000,
-      discount: "-20%",
-      rating: 5,
-      reviews: 156,
-      badge: "discount",
-    },
-  ];
+  useEffect(() => {
+    axios.get("http://localhost:8081/api/productos")
+      .then(({ data }) => setProducts(Array.isArray(data) ? data : []))
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const handleAddToCart = (product) => {
-    setCart([...cart, product]);
-    alert(`${product.name} agregado al carrito`);
-  };
+  const formatPrice = (price) =>
+    new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(price);
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
+  function handleAddToCart(product) {
+    addToCart(product);
+    setAdded(prev => ({ ...prev, [product._id]: true }));
+    setTimeout(() => setAdded(prev => ({ ...prev, [product._id]: false })), 1500);
+  }
+
+  if (loading) return (
+    <section className="py-16 bg-white">
+      <div className="container mx-auto px-4 text-center py-20">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-500 mx-auto mb-4" />
+        <p className="text-gray-400">Cargando productos...</p>
+      </div>
+    </section>
+  );
+
+  if (products.length === 0) return (
+    <section className="py-16 bg-white">
+      <div className="container mx-auto px-4 text-center py-20">
+        <PackageX className="w-14 h-14 text-gray-200 mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-gray-700 mb-2">Sin productos disponibles</h2>
+        <p className="text-gray-400">El administrador aún no ha agregado productos.</p>
+      </div>
+    </section>
+  );
 
   return (
-    // ✅ Añadido id="productos" para que el navbar pueda hacer scroll aquí
     <section id="productos" className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4">Productos Destacados</h2>
-          <p className="text-gray-600 text-lg">
-            Los productos más populares de nuestra tienda
-          </p>
+          <p className="text-gray-600 text-lg">Los productos más populares de nuestra tienda</p>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => (
-            <div
-              key={product.id}
-              className="border rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-1"
-            >
-              {/* Imagen */}
-              <div className="bg-gradient-to-br from-gray-100 to-gray-200 h-64 relative overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
+            <div key={product._id}
+              className="border rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 flex flex-col">
+              <div className="bg-gradient-to-br from-gray-100 to-gray-200 h-56 overflow-hidden">
+                <img src={product.Image || product.Imagen} alt={product.Nombre}
                   className="w-full h-full object-cover"
-                />
-                {product.badge === "discount" && (
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-2 py-1 rounded-full text-sm font-bold">
-                    {product.discount}
-                  </div>
-                )}
-                {product.badge === "new" && (
-                  <div className="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-bold">
-                    NUEVO
-                  </div>
-                )}
+                  onError={e => { e.target.src = "https://placehold.co/400x300?text=Sin+imagen"; }} />
               </div>
-
-              {/* Info */}
-              <div className="p-6">
-                <h3 className="font-bold text-xl mb-2 text-gray-800">{product.name}</h3>
-                <p className="text-gray-600 mb-4">{product.description}</p>
-
-                <div className="flex items-center mb-4">
-                  <div className="flex text-yellow-400">{"⭐".repeat(product.rating)}</div>
-                  <span className="text-gray-500 text-sm ml-2">({product.reviews} reseñas)</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <div>
-                    {product.originalPrice && (
-                      <span className="text-gray-400 line-through text-sm block">
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                    )}
-                    <span className="text-3xl font-bold text-blue-600">
-                      {formatPrice(product.price)}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105"
-                  >
-                    Comprar
+              <div className="p-6 flex flex-col flex-1">
+                <h3 className="font-bold text-xl mb-2 text-gray-800">{product.Nombre}</h3>
+                <p className="text-gray-600 mb-4 flex-1 text-sm">{product.Descripcion || product.DescripCion}</p>
+                <div className="flex justify-between items-center mt-auto">
+                  <span className="text-2xl font-bold text-blue-600">{formatPrice(product.Precio)}</span>
+                  <button onClick={() => handleAddToCart(product)}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl font-semibold text-sm transition-all duration-200 transform hover:scale-105 ${
+                      added[product._id]
+                        ? "bg-green-500 text-white"
+                        : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
+                    }`}>
+                    <ShoppingCart className="w-4 h-4" />
+                    {added[product._id] ? "¡Agregado!" : "Comprar"}
                   </button>
                 </div>
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="text-center mt-12">
-          <a
-            href="#productos"
-            className="inline-block bg-gray-800 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-700 transition duration-300 transform hover:scale-105"
-          >
-            Ver Todos los Productos
-          </a>
         </div>
       </div>
     </section>

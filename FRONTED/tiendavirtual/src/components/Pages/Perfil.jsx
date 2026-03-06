@@ -40,34 +40,36 @@ export default function Perfil() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleGuardar = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage({ type: "", text: "" });
+   const handleGuardar = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage({ type: "", text: "" });
 
-        try {
-            const response = await axios.put(
-                "http://localhost:8081/api/perfil/actualizar",
-                { id: usuario._id, ...formData }
-            );
+    const token = localStorage.getItem("token"); // ← obtienes el token
 
-            // ✅ Actualizar localStorage con los nuevos datos
-            const actualizado = response.data.data;
-            localStorage.setItem("usuario", JSON.stringify(actualizado));
-            setUsuario(actualizado);
-            setEditando(false);
-            setMessage({ type: "success", text: "✅ Perfil actualizado correctamente" });
+    try {
+        const response = await axios.put(
+            "http://localhost:8081/api/perfil/actualizar",
+            { id: usuario._id, ...formData },
+            { headers: { Authorization: `Bearer ${token}` } } // ← lo mandas
+        );
 
-        } catch (error) {
-            console.error("Error:", error);
-            setMessage({
-                type: "error",
-                text: error.response?.data?.message || "❌ Error al actualizar perfil"
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
+        const actualizado = response.data.data;
+        localStorage.setItem("usuario", JSON.stringify(actualizado));
+        setUsuario(actualizado);
+        setEditando(false);
+        setMessage({ type: "success", text: "✅ Perfil actualizado correctamente" });
+
+    } catch (error) {
+        console.error("Error:", error);
+        setMessage({
+            type: "error",
+            text: error.response?.data?.message || "❌ Error al actualizar perfil"
+        });
+    } finally {
+        setLoading(false);
+    }
+}; 
 
     const handleCancelar = () => {
         setEditando(false);

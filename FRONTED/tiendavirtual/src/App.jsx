@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
-import PrivateRoute from './components/PrivateRoute'
+import { AuthProvider } from './components/context/AuthContext.jsx'
+import PrivateRoute from './components/PrivateRoute.jsx'
 import Home from './components/Pages/Home.jsx'
 import Register from './components/Auth/Register.jsx'
 import Login from './components/Auth/Login.jsx'
@@ -13,14 +13,12 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path='/'               element={<Home />} />
-        <Route path='/register'       element={<Register />} />
-        <Route path='/login'          element={<Login />} />
-        <Route path='/perfil'         element={<Perfil />} />
+        <Route path='/'                element={<Home />} />
+        <Route path='/register'        element={<Register />} />
+        <Route path='/login'           element={<Login />} />
+        <Route path='/perfil'          element={<Perfil />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
-        <Route path='/verify-code'    element={<VerifyCode />} />
-
-        {/* Ruta protegida — solo rol admin */}
+        <Route path='/verify-code'     element={<VerifyCode />} />
         <Route path='/admin' element={
           <PrivateRoute rolRequerido="admin">
             <Admin />

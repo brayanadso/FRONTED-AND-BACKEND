@@ -22,3 +22,9 @@ router.get('/:id', obtenerpedido);
 router.put('/:id/estado', actualizarEstadopedido);
 
 export default router;
+
+// routes/pedidos.js
+import { verifyToken, verifyAdmin } from "../middlewares/auth_middlewares.js";
+
+router.post("/",          verifyToken, crearPedido);
+router.get("/admin/todos",verifyToken, verifyAdmin, obtenerTodosPedidos); // ruta futura de admin
